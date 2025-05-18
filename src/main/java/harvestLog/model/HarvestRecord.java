@@ -1,11 +1,13 @@
 package harvestLog.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Entity
+@Entity @Data @NoArgsConstructor
 public class HarvestRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

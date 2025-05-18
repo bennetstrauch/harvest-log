@@ -2,6 +2,12 @@ package harvestLog.repository;
 
 import harvestLog.model.HarvestRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface HarvestRecordRepo extends JpaRepository<HarvestRecord, Long> {
+import java.util.List;
+
+public interface HarvestRecordRepo
+        extends JpaRepository<HarvestRecord, Long>, JpaSpecificationExecutor<HarvestRecord> {
+
+    List<HarvestRecord> findByFarmerId(Long farmerId);
 }

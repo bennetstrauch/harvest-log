@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-<<<<<<< HEAD
 import static harvestLog.security.FarmerIdExtractor.getAuthenticatedFarmerId;
 
 @RestController
@@ -63,14 +62,4 @@ public class HarvestRecordController {
                 : ResponseEntity.notFound().build();
     }
 }
-=======
-//@RestController
-//@RequestMapping("/harvest-record")
-//public class HarvestRecordController {
-//
-//    @GetMapping()
-////    public List<HarvestRecord> getHarvestRecords() {
-////
-////    }
-//}
->>>>>>> crop
+

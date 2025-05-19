@@ -53,15 +53,15 @@ public class AuthController {
                 .body(new FarmerBasicResponse(savedFarmer.getId(), savedFarmer.getName(),
                         savedFarmer.getEmail()));
     }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        UserDetails userDetails = farmerService.loadUserByUsername(request.email());
-        if (!passwordEncoder.matches(request.password(), userDetails.getPassword())) {
+        Farmer farmer = farmerService.findByEmail(request.email());
+        if (!passwordEncoder.matches(request.password(), farmer.getPassword())) {
             throw new BadCredentialsException("Invalid email or password");
         }
-        String token = jwtService.generateToken(request.email());
+        String token = jwtService.generateToken(farmer.getEmail(), farmer.getId());
 
-        // 🔍 Print token to console
         System.out.println("Generated Token: " + token);
 
         return ResponseEntity.ok(new LoginResponse(token));

@@ -40,10 +40,11 @@ public class JwtUtilityService {
     }
 
     // Generate a token with the given username only one role: FARMER
-    public String generateToken(String email) {
+    public String generateToken(String email, Long farmerId) {
         return Jwts.builder()
                 .subject(email)
                 .claim(ROLE_CLAIM,FARMER_ROLE)
+                .claim("farmerId", farmerId)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000))//24 hours
                 .signWith(key)

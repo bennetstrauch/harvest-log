@@ -35,7 +35,7 @@ public class AuthController {
             @Valid @RequestBody FarmerRegistrationRequest registrationRequest) {
 
         // Check if email already exists
-        if (farmerService.existsByEmail(registrationRequest.email())) {
+        if (farmerService.existsByFarmerEmail(registrationRequest.email())) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Email already registered"

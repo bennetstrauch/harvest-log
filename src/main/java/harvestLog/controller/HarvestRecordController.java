@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/harvest-record")
-public class HarvestRecordController {
-
-    @GetMapping()
-    public List<HarvestRecord> getHarvestRecords() {
-
-    }
-}
+//@RestController
+//@RequestMapping("/harvest-record")
+//public class HarvestRecordController {
+//
+//    @GetMapping()
+////    public List<HarvestRecord> getHarvestRecords() {
+////
+////    }
+//}

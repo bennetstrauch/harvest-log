@@ -11,10 +11,10 @@ public class App {
         SpringApplication.run(App.class, args);
     }
 
-    @Bean
-    public CommandLineRunner demo() {
-        return args -> {
-            System.out.println(">>> Application Started");
-        };
-    }
+//    @Bean
+//    public CommandLineRunner demo() {
+//        return args -> {
+//            System.out.println(">>> Application Started");
+//        };
+//    }
 }

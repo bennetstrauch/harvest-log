@@ -41,6 +41,7 @@ public class SecurityConfig {
                         auth -> {
                             auth.requestMatchers("/api/auth/login","/api/auth/register").permitAll()
                                     .requestMatchers("/api/farmers/**").hasAuthority("FARMER")
+                                    .requestMatchers("/api/crops/**").hasAuthority("FARMER")
                                     .anyRequest().authenticated();
 
                         })

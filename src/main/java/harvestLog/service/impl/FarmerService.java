@@ -1,5 +1,8 @@
 package harvestLog.service.impl;
 
+import harvestLog.dto.FarmerBasicResponse;
+import harvestLog.dto.FarmerDetailResponse;
+import harvestLog.dto.FarmerRequest;
 import harvestLog.exception.EntityNotFoundException;
 import harvestLog.model.Farmer;
 import harvestLog.repository.FarmerRepository;
@@ -12,6 +15,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FarmerService implements IFarmerService, UserDetailsService {
@@ -19,10 +23,43 @@ public class FarmerService implements IFarmerService, UserDetailsService {
     private FarmerRepository farmerRepository;
 
     @Override
-    public List<Farmer> getAllFarmers() {
-        return farmerRepository.findAll();
+    public List<FarmerBasicResponse> getAllFarmers() {
+        return farmerRepository.findAll().stream()
+                .map(f -> new FarmerBasicResponse(f.getId(), f.getName(), f.getEmail()))
+                .collect(Collectors.toList());
     }
 
+    @Override
+    public FarmerDetailResponse getMyProfile(String email) {
+        Farmer farmer = findByEmail(email);
+        return toResponseDTO(farmer);
+    }
+    @Override
+    public FarmerDetailResponse updateMyProfile(String email, FarmerRequest request) {
+        Farmer exsitingFarmer = findByEmail(email);
+        exsitingFarmer.setName(request.name());
+        exsitingFarmer.setEmail(request.email());
+        exsitingFarmer.setPassword(request.password());
+
+        Farmer updated = farmerRepository.save(exsitingFarmer);
+        return toResponseDTO(updated);
+    }
+
+    @Override
+    public void  deleteMyAccount(String email) {
+        Farmer farmer = findByEmail(email);
+        farmerRepository.deleteById(farmer.getId());
+    }
+
+    @Override
+    public List<Farmer> searchByFarmerName(String name) {
+        return farmerRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    @Override
+    public boolean existsByFarmerEmail(String email) {
+        return farmerRepository.existsFarmerByEmail(email);
+    }
     @Override
     public Farmer findByEmail(String email) {
         return farmerRepository.findByEmail(email)
@@ -49,19 +86,9 @@ public class FarmerService implements IFarmerService, UserDetailsService {
     @Override
     public void deleteById(long id) {
         if (!farmerRepository.existsById(id)) {
-            throw new EntityNotFoundException("Cannot delete.Farmer not found with Id: " + id);
+            throw new EntityNotFoundException("Cannot delete Farmer not found with Id: " + id);
         }
         farmerRepository.deleteById(id);
-    }
-
-    @Override
-    public List<Farmer> searchByName(String name) {
-        return farmerRepository.findByNameContainingIgnoreCase(name);
-    }
-
-    @Override
-    public boolean existsByEmail(String email) {
-        return farmerRepository.existsFarmerByEmail(email);
     }
 
     @Override
@@ -75,5 +102,15 @@ public class FarmerService implements IFarmerService, UserDetailsService {
         return userDetails;
     }
 
+    private FarmerDetailResponse toResponseDTO(Farmer farmer) {
+        return new FarmerDetailResponse(
+                farmer.getId(),
+                farmer.getName(),
+                farmer.getEmail(),
+                farmer.getHarvestRecords().stream().map(hr -> hr.getId()).toList(),
+                farmer.getCrops().stream().map(c -> c.getId()).toList(),
+                farmer.getFields().stream().map(f -> f.getId()).toList()
+        );
+    }
 
 }

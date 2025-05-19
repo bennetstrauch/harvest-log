@@ -35,7 +35,7 @@ public class AuthController {
             @Valid @RequestBody FarmerRegistrationRequest registrationRequest) {
 
         // Check if email already exists
-        if (farmerService.existsByEmail(registrationRequest.email())) {
+        if (farmerService.existsByFarmerEmail(registrationRequest.email())) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Email already registered"
@@ -61,7 +61,6 @@ public class AuthController {
         }
         String token = jwtService.generateToken(request.email());
 
-        // 🔍 Print token to console
         System.out.println("Generated Token: " + token);
 
         return ResponseEntity.ok(new LoginResponse(token));

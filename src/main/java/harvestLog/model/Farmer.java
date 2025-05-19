@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -25,15 +26,30 @@ public class Farmer {
 
     @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL)
     @JsonIgnore
-    private List<HarvestRecord> harvestRecords;
+    private List<HarvestRecord> harvestRecords = new ArrayList<>();
 
     //If you ever need to fetch a crop and know which farmer it belongs to, make it bidirectional.
     @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL)
     @JsonIgnore
-    private List<Crop> crops;
+    private List<Crop> crops = new ArrayList<>();
 
     @OneToMany(mappedBy = "farmer",cascade = CascadeType.ALL)
-    private List<Field> fields;
+    @JsonIgnore
+    private List<Field> fields = new ArrayList<>();
 
+    public void addHarvestRecord(HarvestRecord record) {
+        harvestRecords.add(record);
+        record.setFarmer(this);
+    }
+
+    public void addCrop(Crop crop) {
+        crops.add(crop);
+        crop.setFarmer(this);
+    }
+
+    public void addField(Field field) {
+        fields.add(field);
+        field.setFarmer(this);
+    }
 
 }

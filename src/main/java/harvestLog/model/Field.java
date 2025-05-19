@@ -1,15 +1,20 @@
 package harvestLog.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Data
+@NoArgsConstructor
 public class Field {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    Long id;
+     Long id;
 
     String name;
+// #leave it lazy?
+    @ManyToOne(fetch = FetchType.LAZY)
+    Farmer farmer;
 }

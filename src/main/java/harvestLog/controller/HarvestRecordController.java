@@ -1,15 +1,14 @@
 package harvestLog.controller;
 
-import harvestLog.model.Farmer;
-import harvestLog.model.HarvestRecord;
+import harvestLog.dto.HarvestRecordRequest;
+import harvestLog.dto.HarvestRecordResponse;
 import harvestLog.service.HarvestRecordService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static harvestLog.security.FarmerIdExtractor.getAuthenticatedFarmerId;
 
@@ -17,17 +16,20 @@ import static harvestLog.security.FarmerIdExtractor.getAuthenticatedFarmerId;
 @RequestMapping("/api/harvest-record")
 public class HarvestRecordController {
 
-    @Autowired private HarvestRecordService recordService;
+    private final HarvestRecordService recordService;
+
+    public HarvestRecordController(HarvestRecordService recordService) {
+        this.recordService = recordService;
+    }
 
     @GetMapping
-    public List<HarvestRecord> getAllHarvestRecords() {
+    public List<HarvestRecordResponse> getAllHarvestRecords() {
         Long farmerId = getAuthenticatedFarmerId();
-
         return recordService.getForFarmer(farmerId);
     }
 
     @GetMapping("/filtered")
-    public List<HarvestRecord> getFiltered(
+    public List<HarvestRecordResponse> getFiltered(
             @RequestParam(required = false) List<Long> fieldIds,
             @RequestParam(required = false) List<Long> cropIds,
             @RequestParam(required = false) LocalDate startDate,
@@ -37,30 +39,26 @@ public class HarvestRecordController {
     }
 
     @PostMapping
-    public HarvestRecord create(@RequestBody HarvestRecord record) {
+    public HarvestRecordResponse create(@Valid @RequestBody HarvestRecordRequest request) {
         Long farmerId = getAuthenticatedFarmerId();
-        record.setFarmer(new Farmer(farmerId)); // Set farmer reference
-        return recordService.create(record);
+        return recordService.create(request, farmerId);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<HarvestRecord> update(@PathVariable Long id, @RequestBody HarvestRecord record) {
+    public ResponseEntity<HarvestRecordResponse> update(@PathVariable Long id,
+                                                        @Valid @RequestBody HarvestRecordRequest request) {
         Long farmerId = getAuthenticatedFarmerId();
-        record.setFarmer(new Farmer(farmerId)); // Ensure farmer consistency
-        return recordService.update(id, record)
+        return recordService.update(id, request, farmerId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-//        ##can be aop?
         Long farmerId = getAuthenticatedFarmerId();
         boolean deletionSuccessful = recordService.delete(id, farmerId);
-
-
-            return deletionSuccessful
-                    ? ResponseEntity.ok().build()
-                    : ResponseEntity.notFound().build();
+        return deletionSuccessful
+                ? ResponseEntity.ok().build()
+                : ResponseEntity.notFound().build();
     }
 }

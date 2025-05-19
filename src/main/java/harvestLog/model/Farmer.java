@@ -19,7 +19,7 @@ public class Farmer {
     List<HarvestRecord> harvestRecords;
     @OneToMany
     List<Crop> crops;
-    @OneToMany
+    @OneToMany( mappedBy = "farmer")
     List<Field> fields;
 
 }

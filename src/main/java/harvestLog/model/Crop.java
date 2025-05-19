@@ -1,15 +1,24 @@
 package harvestLog.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class Crop {
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
 
-    String name;
-    MeasureUnit measureUnit;
+    private String name;
+    @Enumerated(EnumType.STRING)
+    private MeasureUnit measureUnit;
+
+    @ManyToOne
+    @JoinColumn(name = "farmer_id")
+    private Farmer farmer;
 }

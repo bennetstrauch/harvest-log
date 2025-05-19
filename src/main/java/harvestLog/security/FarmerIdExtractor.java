@@ -2,6 +2,7 @@ package harvestLog.security;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
+// #add annotation currentFarmerId for cleaner code
 public class FarmerIdExtractor {
 
     public static Long getAuthenticatedFarmerId() {

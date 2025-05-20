@@ -42,4 +42,6 @@ public class FarmerController {
     public List<FarmerBasicResponse> getAllFarmers() {
         return farmerService.getAllFarmers();
     }
+
+
 }

@@ -2,11 +2,12 @@ package harvestLog.service.impl;
 
 import harvestLog.dto.CropRequest;
 import harvestLog.dto.CropResponse;
+import harvestLog.dto.HarvestSummaryResponse;
 import harvestLog.exception.EntityNotFoundException;
-import harvestLog.model.Crop;
-import harvestLog.model.Farmer;
+import harvestLog.model.*;
 import harvestLog.repository.CropRepository;
 import harvestLog.repository.FarmerRepository;
+import harvestLog.repository.HarvestRecordRepo;
 import harvestLog.service.ICropService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,9 +24,24 @@ public class CropService implements ICropService {
     @Autowired
     private FarmerRepository farmerRepository;
 
+    @Autowired
+    private HarvestRecordRepo harvestRecordRepo;
+
     private Farmer getCurrentFarmer() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return farmerRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Farmer not found"));
+    }
+
+    @Override
+    public List<HarvestSummaryResponse> getHarvestsByCrop(Long cropId) {
+        List<HarvestRecord> records = harvestRecordRepo.findByCrop_Id(cropId);
+        return records.stream().map(record ->
+                new HarvestSummaryResponse(
+                        record.getId(),
+                        record.getDate(),
+                        record.getHarvestedQuantity(),
+                        record.getFields().stream().map(Field::getId).toList())
+        ).toList();
     }
 
     @Override
@@ -35,15 +51,23 @@ public class CropService implements ICropService {
         crop.setName(dto.name());
         crop.setMeasureUnit(dto.measureUnit());
         crop.setFarmer(farmer);
+        crop.setCategory(dto.category());
         Crop savedCrop = cropRepository.save(crop);
-        return new CropResponse(savedCrop.getId(), savedCrop.getName(), savedCrop.getMeasureUnit());
+        return new CropResponse(savedCrop.getId(), savedCrop.getName(), savedCrop.getMeasureUnit(), savedCrop.getCategory());
     }
 
     @Override
     public List<CropResponse> getAllCrops() {
         Farmer farmer = getCurrentFarmer();
         return cropRepository.findByFarmer(farmer).stream().map(crop ->
-                new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit())
+                new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(), crop.getCategory())
+        ).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CropResponse> searchByCategory(Category category) {
+        return cropRepository.findCropsByCategory(category).stream().map(crop ->
+                new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(), crop.getCategory())
         ).collect(Collectors.toList());
     }
 
@@ -52,7 +76,7 @@ public class CropService implements ICropService {
         Farmer farmer = getCurrentFarmer();
         Crop crop = cropRepository.findById(id).filter(c -> c.getFarmer().getId().equals(farmer.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Crop not found"));
-        return new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit());
+        return new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(), crop.getCategory());
     }
 
     @Override
@@ -62,8 +86,9 @@ public class CropService implements ICropService {
                 .orElseThrow(() -> new EntityNotFoundException("Crop not found"));
         crop.setName(dto.name());
         crop.setMeasureUnit(dto.measureUnit());
+        crop.setCategory(dto.category());
         Crop updated = cropRepository.save(crop);
-        return new CropResponse(updated.getId(), updated.getName(), updated.getMeasureUnit());
+        return new CropResponse(updated.getId(), updated.getName(), updated.getMeasureUnit(), updated.getCategory());
     }
 
     @Override
@@ -75,4 +100,5 @@ public class CropService implements ICropService {
 
         cropRepository.delete(crop);
     }
+
 }

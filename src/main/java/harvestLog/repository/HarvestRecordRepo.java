@@ -10,4 +10,7 @@ public interface HarvestRecordRepo
         extends JpaRepository<HarvestRecord, Long>, JpaSpecificationExecutor<HarvestRecord> {
 
     List<HarvestRecord> findByFarmerId(Long farmerId);
+
+    // used for GET /api/crops/{id}/harvests
+    List<HarvestRecord> findByCrop_Id(Long cropId);
 }

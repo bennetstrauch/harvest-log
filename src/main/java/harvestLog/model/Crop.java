@@ -18,6 +18,9 @@ public class Crop {
     @Enumerated(EnumType.STRING)
     private MeasureUnit measureUnit;
 
+    @Enumerated(EnumType.STRING)
+    private Category category;
+
     @ManyToOne
     @JoinColumn(name = "farmer_id")
     private Farmer farmer;

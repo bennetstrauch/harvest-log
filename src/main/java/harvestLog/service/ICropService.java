@@ -16,6 +16,7 @@ public interface ICropService {
     CropResponse getCropById(Long id);
     CropResponse updateCrop(Long id, CropRequest crop);
     void deleteCrop(Long id);
+    CropResponse getCropByName(String cropName);
 
     List<HarvestSummaryResponse> getHarvestsByCrop(Long id);
 }

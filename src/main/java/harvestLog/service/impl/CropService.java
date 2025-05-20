@@ -101,4 +101,12 @@ public class CropService implements ICropService {
         cropRepository.delete(crop);
     }
 
+    @Override
+    public CropResponse getCropByName   (String cropName) {
+        Farmer farmer = getCurrentFarmer();
+        Crop crop = cropRepository.findCropByNameContainingIgnoreCase(cropName).filter(c -> c.getFarmer().getId().equals(farmer.getId()))
+                .orElseThrow(() -> new EntityNotFoundException("Crop not found"));
+        return new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(), crop.getCategory());
+    }
+
 }

@@ -17,7 +17,6 @@ import static harvestLog.security.FarmerIdExtractor.getAuthenticatedFarmerId;
 public class HarvestRecordController {
 
     private final HarvestRecordService recordService;
-
     public HarvestRecordController(HarvestRecordService recordService) {
         this.recordService = recordService;
     }

@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,10 +73,10 @@ public class CropService implements ICropService {
     }
 
     @Override
-    public List<CropResponse> findByNameContains(String s) {
-        return cropRepository.findByNameContainingIgnoreCase(s).stream().map(crop ->
-                new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(),crop.getCategory()))
-                .collect(Collectors.toList());
+    public Optional<List<CropResponse>> findByNameContains(String s) {
+        return cropRepository.findByNameContainingIgnoreCase(s).map(crops -> crops.stream().map(
+                crop -> new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(), crop.getCategory())
+        ).collect(Collectors.toList()));
     }
 
     @Override
@@ -109,7 +110,7 @@ public class CropService implements ICropService {
     }
 
     @Override
-    public CropResponse getCropByName   (String cropName) {
+    public CropResponse getCropByName(String cropName) {
         Farmer farmer = getCurrentFarmer();
         Crop crop = cropRepository.findCropByNameContainingIgnoreCase(cropName).filter(c -> c.getFarmer().getId().equals(farmer.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Crop not found"));

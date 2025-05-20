@@ -8,12 +8,13 @@ import harvestLog.model.Category;
 import harvestLog.model.Crop;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ICropService {
     CropResponse addCrop(CropRequest crop);
     List<CropResponse> getAllCrops();
     List<CropResponse> searchByCategory(Category category);
-    List<CropResponse> findByNameContains(String s);
+    Optional<List<CropResponse>> findByNameContains(String s);
     CropResponse getCropById(Long id);
     CropResponse updateCrop(Long id, CropRequest crop);
     void deleteCrop(Long id);

@@ -18,8 +18,6 @@ public class CropController {
 
     @Autowired
     private ICropService cropService;
-    @Autowired
-    private IFarmerService farmerService;
 
     @PostMapping
     public ResponseEntity<CropResponse> createCrop(@RequestBody CropRequest dto) {
@@ -46,9 +44,10 @@ public class CropController {
         Category cat = Category.valueOf(category.toUpperCase());
         return ResponseEntity.ok(cropService.searchByCategory(cat));
     }
+
     @GetMapping("/name-contains")
     public ResponseEntity<List<CropResponse>> searchCropsByName(@RequestParam String s) {
-        return ResponseEntity.ok(cropService.findByNameContains(s));
+        return cropService.findByNameContains(s).map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
     }
 
     @PutMapping("/{id}")

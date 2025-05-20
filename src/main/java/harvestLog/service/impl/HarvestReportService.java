@@ -26,8 +26,8 @@ public class HarvestReportService implements IHarvestReportService {
 
     // this method will be triggered weekly on Sunday at 12:00pm
     // Day of month (* = any day)/Month (* = any month)/Day of week (SUN = Sunday)
-    @Scheduled(cron = "0 * * * * *")
-   // @Scheduled(cron = "0 0 12 ? * SUN")
+   // @Scheduled(cron = "0 * * * * *") --> for test
+    @Scheduled(cron = "0 0 12 ? * SUN")
     public void generateWeeklyReport() {
         LocalDate today = LocalDate.now();
         LocalDate endDate = today.with(DayOfWeek.SUNDAY);

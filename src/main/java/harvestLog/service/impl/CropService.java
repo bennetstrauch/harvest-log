@@ -72,6 +72,13 @@ public class CropService implements ICropService {
     }
 
     @Override
+    public List<CropResponse> findByNameContains(String s) {
+        return cropRepository.findByNameContainingIgnoreCase(s).stream().map(crop ->
+                new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(),crop.getCategory()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public CropResponse getCropById(Long id) {
         Farmer farmer = getCurrentFarmer();
         Crop crop = cropRepository.findById(id).filter(c -> c.getFarmer().getId().equals(farmer.getId()))

@@ -18,7 +18,7 @@ public interface IFarmerService {
     Farmer update(Long id, Farmer farmer);
 
     void deleteById(long id);
-    List<Farmer> searchByFarmerName(String name);
+
     boolean existsByFarmerEmail(String email);
 
 }

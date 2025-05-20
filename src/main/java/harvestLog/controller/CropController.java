@@ -36,7 +36,6 @@ public class CropController {
         return ResponseEntity.ok(cropService.getHarvestsByCrop(id));
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<CropResponse> getCropById(@PathVariable Long id) {
         return ResponseEntity.ok(cropService.getCropById(id));
@@ -46,6 +45,10 @@ public class CropController {
     public ResponseEntity<List<CropResponse>> searchCropsByCategory(@RequestParam String category) {
         Category cat = Category.valueOf(category.toUpperCase());
         return ResponseEntity.ok(cropService.searchByCategory(cat));
+    }
+    @GetMapping("/name-contains")
+    public ResponseEntity<List<CropResponse>> searchCropsByName(@RequestParam String s) {
+        return ResponseEntity.ok(cropService.findByNameContains(s));
     }
 
     @PutMapping("/{id}")

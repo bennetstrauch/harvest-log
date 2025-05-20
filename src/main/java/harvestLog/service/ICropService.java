@@ -13,6 +13,7 @@ public interface ICropService {
     CropResponse addCrop(CropRequest crop);
     List<CropResponse> getAllCrops();
     List<CropResponse> searchByCategory(Category category);
+    List<CropResponse> findByNameContains(String s);
     CropResponse getCropById(Long id);
     CropResponse updateCrop(Long id, CropRequest crop);
     void deleteCrop(Long id);

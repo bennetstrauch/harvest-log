@@ -12,8 +12,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
-
 public class HarvestRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -22,6 +20,7 @@ public class HarvestRecord {
     LocalDate date;
     @OneToOne
     Crop crop;
+
     @ManyToMany
     List<Field> fields;
 

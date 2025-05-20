@@ -11,4 +11,7 @@ import java.util.Optional;
 public interface CropRepository extends JpaRepository<Crop, Long> {
     List<Crop> findByFarmer(Farmer farmer);
     List<Crop> findCropsByCategory(Category category);
+    // use for query like %name%
+    List<Crop> findByNameContainingIgnoreCase(String name);
+
 }

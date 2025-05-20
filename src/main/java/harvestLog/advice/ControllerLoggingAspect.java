@@ -26,6 +26,12 @@ public class ControllerLoggingAspect {
         logger.info("Entering {} with farmerId: {} and arguments: {}",
                 methodName, farmerId != null ? farmerId : "unknown", Arrays.toString(args));
     }
+    @Before("execution(@org.springframework.scheduling.annotation.Scheduled * harvestLog.service.impl.HarvestReportService.generateWeeklyReport(..))")
+    public void logScheduledReportTrigger(JoinPoint joinPoint) {
+        String methodName = joinPoint.getSignature().toShortString();
+        logger.info("Scheduled task triggered: {}", methodName);
+    }
+
 
     // Log after successful execution
     @AfterReturning(pointcut = "execution(public * harvestLog.controller..*.*(..))", returning = "result")

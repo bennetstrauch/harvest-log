@@ -52,11 +52,6 @@ public class FarmerService implements IFarmerService, UserDetailsService {
     }
 
     @Override
-    public List<Farmer> searchByFarmerName(String name) {
-        return farmerRepository.findByNameContainingIgnoreCase(name);
-    }
-
-    @Override
     public boolean existsByFarmerEmail(String email) {
         return farmerRepository.existsFarmerByEmail(email);
     }

@@ -22,11 +22,11 @@ public class HarvestRecord {
     LocalDate date;
     @OneToOne
     Crop crop;
-    @OneToMany
+    @ManyToMany
     List<Field> fields;
 
     double harvestedQuantity;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     Farmer farmer;
 
 }

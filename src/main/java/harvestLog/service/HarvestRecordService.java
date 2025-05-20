@@ -52,7 +52,7 @@ public class HarvestRecordService {
                         predicates.add(cb.equal(root.get("farmer").get("id"), farmerId));
                     }
                     if (fieldIds != null && !fieldIds.isEmpty()) {
-                        predicates.add(root.get("fields").get("id").in(fieldIds));
+                        predicates.add(root.join("fields").get("id").in(fieldIds));
                     }
                     if (cropIds != null && !cropIds.isEmpty()) {
                         predicates.add(root.get("crop").get("id").in(cropIds));
@@ -71,9 +71,13 @@ public class HarvestRecordService {
 
     @Transactional
     public HarvestRecordResponse create(HarvestRecordRequest request, Long farmerId) {
-        HarvestRecord record = toEntity(request, farmerId);
-        HarvestRecord saved = recordRepo.save(record);
-        return toResponse(saved);
+        try {
+            HarvestRecord record = toEntity(request, farmerId);
+            HarvestRecord saved = recordRepo.save(record);
+            return toResponse(saved);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Failed to create harvest record: " + e.getMessage(), e);
+        }
     }
 
     @Transactional
@@ -95,15 +99,6 @@ public class HarvestRecordService {
         }
         return false;
     }
-//    @Transactional
-//    public void delete(Long harvestEntryId, Long farmerId) {
-//        HarvestRecord record = recordRepo.findById(harvestEntryId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Harvest record not found: " + harvestEntryId));
-//        if (!record.getFarmer().getId().equals(farmerId)) {
-//            throw new UnauthorizedException("Farmer not authorized to delete this record");
-//        }
-//        recordRepo.deleteById(harvestEntryId);
-//    } #maybe if time
 
     private HarvestRecord toEntity(HarvestRecordRequest request, Long farmerId) {
         Crop crop = cropRepo.findById(request.cropId())
@@ -112,6 +107,8 @@ public class HarvestRecordService {
         if (fields.size() != request.fieldIds().size()) {
             throw new IllegalArgumentException("One or more fields not found");
         }
+
+     
         Farmer farmer = farmerRepo.findById(farmerId)
                 .orElseThrow(() -> new IllegalArgumentException("Farmer not found: " + farmerId));
 
@@ -131,6 +128,12 @@ public class HarvestRecordService {
         if (fields.size() != request.fieldIds().size()) {
             throw new IllegalArgumentException("One or more fields not found");
         }
+        // Verify fields belong to the farmer
+        fields.forEach(field -> {
+            if (!field.getFarmer().getId().equals(record.getFarmer().getId())) {
+                throw new IllegalArgumentException("Field " + field.getId() + " does not belong to farmer " + record.getFarmer().getId());
+            }
+        });
 
         record.setDate(request.date());
         record.setCrop(crop);

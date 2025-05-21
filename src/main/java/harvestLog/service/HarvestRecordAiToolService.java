@@ -3,17 +3,18 @@ package harvestLog.service;
 import harvestLog.dto.HarvestRecordRequest;
 import harvestLog.dto.HarvestRecordResponse;
 import io.swagger.v3.oas.annotations.Parameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
-
 @Component
 public class HarvestRecordAiToolService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HarvestRecordAiToolService.class);
 
     private final HarvestRecordService recordService;
 
@@ -24,8 +25,7 @@ public class HarvestRecordAiToolService {
     @Tool(description = "Fetch or retrieve all harvest records for the user.")
     public List<HarvestRecordResponse> getAllHarvestRecords() {
         Long farmerId = getAuthenticatedFarmerId();
-
-        System.out.println("Tool fetched records");
+        logger.info("Fetching all harvest records for farmerId={}", farmerId);
         return recordService.getForFarmer(farmerId);
     }
 
@@ -36,7 +36,8 @@ public class HarvestRecordAiToolService {
             @Parameter(description = "Optional start date in format YYYY-MM-DD") LocalDate startDate,
             @Parameter(description = "Optional end date in format YYYY-MM-DD") LocalDate endDate) {
         Long farmerId = getAuthenticatedFarmerId();
-        System.out.println("Tool fetched records");
+        logger.info("Fetching filtered harvest records for farmerId={}, fieldIds={}, cropIds={}, startDate={}, endDate={}",
+                farmerId, fieldIds, cropIds, startDate, endDate);
         return recordService.getFilteredRecords(farmerId, fieldIds, cropIds, startDate, endDate);
     }
 
@@ -44,6 +45,7 @@ public class HarvestRecordAiToolService {
     public HarvestRecordResponse createHarvestRecord(
             @Parameter(description = "Harvest record request object") HarvestRecordRequest request) {
         Long farmerId = getAuthenticatedFarmerId();
+        logger.info("Creating new harvest record for farmerId={}, request={}", farmerId, request);
         return recordService.create(request, farmerId);
     }
 
@@ -52,6 +54,7 @@ public class HarvestRecordAiToolService {
             @Parameter(description = "ID of the harvest record to update") Long id,
             @Parameter(description = "Harvest record request with updated data") HarvestRecordRequest request) {
         Long farmerId = getAuthenticatedFarmerId();
+        logger.info("Updating harvest record with id={}, farmerId={}, request={}", id, farmerId, request);
         return recordService.update(id, request, farmerId).orElseThrow();
     }
 
@@ -59,6 +62,7 @@ public class HarvestRecordAiToolService {
     public boolean deleteHarvestRecord(
             @Parameter(description = "ID of the harvest record to delete") Long id) {
         Long farmerId = getAuthenticatedFarmerId();
+        logger.info("Deleting harvest record with id={} for farmerId={}", id, farmerId);
         return recordService.delete(id, farmerId);
     }
 

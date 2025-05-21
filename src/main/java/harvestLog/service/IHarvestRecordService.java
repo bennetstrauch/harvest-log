@@ -13,7 +13,6 @@ import java.util.Optional;
 /**
  * Service interface for managing harvest records.
  */
-@Service
 public interface IHarvestRecordService {
 
     /**

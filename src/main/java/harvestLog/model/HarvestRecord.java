@@ -18,7 +18,7 @@ public class HarvestRecord {
     Long id;
 
     LocalDate date;
-    @OneToOne
+    @ManyToOne
     Crop crop;
 
     @ManyToMany

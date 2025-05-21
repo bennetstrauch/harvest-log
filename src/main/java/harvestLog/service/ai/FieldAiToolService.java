@@ -1,7 +1,8 @@
-package harvestLog.service;
+package harvestLog.service.ai;
 
 import harvestLog.dto.FieldRequest;
 import harvestLog.dto.FieldResponse;
+import harvestLog.service.impl.FieldService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;

@@ -1,4 +1,4 @@
-package harvestLog.service;
+package harvestLog.service.impl;
 
 import harvestLog.dto.FieldRequest;
 import harvestLog.dto.FieldResponse;

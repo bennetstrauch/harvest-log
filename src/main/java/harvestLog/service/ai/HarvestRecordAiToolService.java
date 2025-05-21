@@ -1,7 +1,8 @@
-package harvestLog.service;
+package harvestLog.service.ai;
 
 import harvestLog.dto.HarvestRecordRequest;
 import harvestLog.dto.HarvestRecordResponse;
+import harvestLog.service.impl.HarvestRecordService;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

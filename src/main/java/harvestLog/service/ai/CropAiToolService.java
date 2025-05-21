@@ -1,4 +1,4 @@
-package harvestLog.service;
+package harvestLog.service.ai;
 
 import harvestLog.dto.CropRequest;
 import harvestLog.dto.CropResponse;

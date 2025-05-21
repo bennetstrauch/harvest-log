@@ -2,7 +2,8 @@ package harvestLog.controller;
 
 import harvestLog.dto.HarvestRecordRequest;
 import harvestLog.dto.HarvestRecordResponse;
-import harvestLog.service.HarvestRecordService;
+import harvestLog.service.IHarvestRecordService;
+import harvestLog.service.impl.HarvestRecordService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +17,8 @@ import static harvestLog.security.FarmerIdExtractor.getAuthenticatedFarmerId;
 @RequestMapping("/api/harvest-record")
 public class HarvestRecordController {
 
-    private final HarvestRecordService recordService;
-    public HarvestRecordController(HarvestRecordService recordService) {
+    private final IHarvestRecordService recordService;
+    public HarvestRecordController(IHarvestRecordService recordService) {
         this.recordService = recordService;
     }
 

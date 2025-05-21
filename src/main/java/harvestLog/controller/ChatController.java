@@ -1,19 +1,15 @@
     package harvestLog.controller;
 
-//    import harvestLog.service.CropAiToolService;
-    import harvestLog.service.CropAiToolService;
-    import harvestLog.service.FieldAiToolService;
-    import harvestLog.service.HarvestRecordAiToolService;
-    import harvestLog.service.HarvestRecordService;
+//    import harvestLog.service.ai.CropAiToolService;
+    import harvestLog.service.ai.CropAiToolService;
+    import harvestLog.service.ai.FieldAiToolService;
+    import harvestLog.service.ai.HarvestRecordAiToolService;
     import org.springframework.ai.chat.client.ChatClient;
     import org.springframework.ai.chat.model.ChatResponse;
-    import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.web.bind.annotation.GetMapping;
     import org.springframework.web.bind.annotation.RequestMapping;
     import org.springframework.web.bind.annotation.RequestParam;
     import org.springframework.web.bind.annotation.RestController;
-
-    import java.util.List;
 
     import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
 

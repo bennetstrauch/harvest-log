@@ -1,7 +1,7 @@
 package harvestLog.controller;
 import harvestLog.dto.FieldRequest;
 import harvestLog.dto.FieldResponse;
-import harvestLog.service.FieldService;
+import harvestLog.service.impl.FieldService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

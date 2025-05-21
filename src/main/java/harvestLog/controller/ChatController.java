@@ -2,6 +2,7 @@
 
 //    import harvestLog.service.CropAiToolService;
     import harvestLog.service.CropAiToolService;
+    import harvestLog.service.FieldAiToolService;
     import harvestLog.service.HarvestRecordAiToolService;
     import harvestLog.service.HarvestRecordService;
     import org.springframework.ai.chat.client.ChatClient;
@@ -23,11 +24,13 @@
         private final ChatClient chatClient;
         private final HarvestRecordAiToolService harvestRecordAiToolService;
         private final CropAiToolService cropAiToolService;
+        private final FieldAiToolService fieldAiToolService;
 
-        public ChatController(ChatClient chatClient, HarvestRecordAiToolService harvestRecordAiToolService, CropAiToolService cropAiToolService) {
+        public ChatController(ChatClient chatClient, HarvestRecordAiToolService harvestRecordAiToolService, CropAiToolService cropAiToolService, FieldAiToolService fieldAiToolService) {
             this.chatClient = chatClient;
             this.harvestRecordAiToolService = harvestRecordAiToolService;
             this.cropAiToolService = cropAiToolService;
+            this.fieldAiToolService = fieldAiToolService;
         }
 
 
@@ -39,7 +42,7 @@
 
             ChatResponse response = chatClient
                     .prompt(prompt)
-                    .tools(harvestRecordAiToolService, cropAiToolService)
+                    .tools(harvestRecordAiToolService, cropAiToolService, fieldAiToolService)
                     .advisors(a -> a.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId))
                     .call()
                     .chatResponse();

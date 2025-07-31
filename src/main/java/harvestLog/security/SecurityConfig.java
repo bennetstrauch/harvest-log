@@ -38,12 +38,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults()) // Enable cors with default config
                 .authorizeHttpRequests(
-                        auth -> {
-                            auth.requestMatchers("/api/auth/login","/api/auth/register").permitAll()
-                                  .requestMatchers("/api/**").hasRole("FARMER")
-                                    .anyRequest().authenticated();
-
-                        })
+                        auth -> auth.requestMatchers("/api/auth/login","/api/auth/register", "health").permitAll()
+                              .requestMatchers("/api/**").hasRole("FARMER")
+                                .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

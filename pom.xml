@@ -107,6 +107,7 @@
 
 
 	<build>
+		<finalName>harvest-log-backend</finalName> <!-- your desired name -->
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

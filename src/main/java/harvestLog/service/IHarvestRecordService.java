@@ -4,7 +4,6 @@ import harvestLog.dto.HarvestRecordRequest;
 import harvestLog.dto.HarvestRecordResponse;
 import harvestLog.model.HarvestRecord;
 import jakarta.validation.Valid;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -38,6 +37,13 @@ public interface IHarvestRecordService {
      * @return List of filtered HarvestRecordResponse DTOs
      */
     List<HarvestRecordResponse> getFilteredRecords(Long farmerId, List<Long> fieldIds, List<Long> cropIds, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * Returns the latest HarvestRecord of a farmer.
+     * @param farmerId -
+     * @return HarvestRecordDTO
+     */
+    Optional<HarvestRecordResponse> getLatestForFarmer(Long farmerId);
 
     /**
      * Creates a new harvest record for a farmer.

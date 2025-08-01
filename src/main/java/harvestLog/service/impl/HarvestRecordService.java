@@ -10,7 +10,6 @@ import harvestLog.repository.CropRepository;
 import harvestLog.repository.FarmerRepository;
 import harvestLog.repository.FieldRepository;
 import harvestLog.repository.HarvestRecordRepo;
-import harvestLog.service.IHarvestRecordService;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -69,6 +68,12 @@ public class HarvestRecordService {
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
+
+    public Optional<HarvestRecordResponse> getLatestForFarmer(Long farmerId) {
+        return recordRepo.findTopByFarmerIdOrderByDateDescIdDesc(farmerId)
+                .map(this::toResponse);
+    }
+
 
     @Transactional
     public HarvestRecordResponse create(HarvestRecordRequest request, Long farmerId) {

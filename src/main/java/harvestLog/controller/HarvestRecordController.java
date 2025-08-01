@@ -2,10 +2,8 @@ package harvestLog.controller;
 
 import harvestLog.dto.HarvestRecordRequest;
 import harvestLog.dto.HarvestRecordResponse;
-import harvestLog.service.IHarvestRecordService;
 import harvestLog.service.impl.HarvestRecordService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +37,15 @@ public class HarvestRecordController {
         Long farmerId = getAuthenticatedFarmerId();
         return recordService.getFilteredRecords(farmerId, fieldIds, cropIds, startDate, endDate);
     }
+
+    @GetMapping("/latest")
+    public ResponseEntity<HarvestRecordResponse> getLatestEntry() {
+        Long farmerId = getAuthenticatedFarmerId();
+        return recordService.getLatestForFarmer(farmerId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 
     @PostMapping
     public HarvestRecordResponse create(@Valid @RequestBody HarvestRecordRequest request) {

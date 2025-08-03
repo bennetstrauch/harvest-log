@@ -58,6 +58,14 @@ public class CropService implements ICropService {
     }
 
     @Override
+    public List<CropResponse> addCrops(List<CropRequest> cropRequests) {
+    return cropRequests.stream()
+        .map(this::addCrop) // Reuse existing single-crop logic
+        .collect(Collectors.toList());
+}
+
+
+    @Override
     public List<CropResponse> getAllCrops() {
         Farmer farmer = getCurrentFarmer();
         return cropRepository.findByFarmer(farmer).stream().map(crop ->

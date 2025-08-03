@@ -12,6 +12,7 @@ import java.util.Optional;
 
 public interface ICropService {
     CropResponse addCrop(CropRequest crop);
+    List<CropResponse> addCrops(List<CropRequest> cropRequests);
     List<CropResponse> getAllCrops();
     List<CropResponse> searchByCategory(Category category);
     Optional<List<CropResponse>> findByNameContains(String s);

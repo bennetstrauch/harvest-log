@@ -24,6 +24,13 @@ public class CropController {
         return ResponseEntity.ok(cropService.addCrop(dto));
     }
 
+    @PostMapping("/batch")
+    public ResponseEntity<List<CropResponse>> createCrops(@RequestBody List<CropRequest> cropRequests) {
+    List<CropResponse> created = cropService.addCrops(cropRequests);
+    return ResponseEntity.ok(created);
+}
+
+
     @GetMapping
     public ResponseEntity<List<CropResponse>> getAllCrops() {
         return ResponseEntity.ok(cropService.getAllCrops());

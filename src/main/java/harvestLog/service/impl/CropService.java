@@ -7,8 +7,9 @@ import harvestLog.exception.EntityNotFoundException;
 import harvestLog.model.*;
 import harvestLog.repository.CropRepository;
 import harvestLog.repository.FarmerRepository;
-import harvestLog.repository.HarvestRecordRepo;
+import harvestLog.repository.HarvestRecordRepository;
 import harvestLog.service.ICropService;
+import harvestLog.service.ICategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -26,8 +27,14 @@ public class CropService implements ICropService {
     private FarmerRepository farmerRepository;
 
     @Autowired
-    private HarvestRecordRepo harvestRecordRepo;
+    private HarvestRecordRepository harvestRecordRepository;
 
+    @Autowired
+    private ICategoryService categoryService;
+    @Autowired
+    private MeasureUnitService measureUnitService;
+
+//    ##change to same as field getAutentcatedFarmerId in Controller
     private Farmer getCurrentFarmer() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return farmerRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Farmer not found"));
@@ -35,7 +42,7 @@ public class CropService implements ICropService {
 
     @Override
     public List<HarvestSummaryResponse> getHarvestsByCrop(Long cropId) {
-        List<HarvestRecord> records = harvestRecordRepo.findByCrop_Id(cropId);
+        List<HarvestRecord> records = harvestRecordRepository.findByCrop_Id(cropId);
         return records.stream().map(record ->
                 new HarvestSummaryResponse(
                         record.getId(),
@@ -49,41 +56,45 @@ public class CropService implements ICropService {
     public CropResponse addCrop(CropRequest dto) {
         Farmer farmer = getCurrentFarmer();
         Crop crop = new Crop();
+        MeasureUnit measureUnit= measureUnitService.getById(dto.measureUnitId(), );
         crop.setName(dto.name());
-        crop.setMeasureUnit(dto.measureUnit());
+        crop.setMeasureUnit(measureUnit);
         crop.setFarmer(farmer);
-        crop.setCategory(dto.category());
+
+        // Resolve category by name using helper service
+        Category category = categoryService.findByNameOrCreate(dto.categoryName());
+        crop.setCategory(category);
+
         Crop savedCrop = cropRepository.save(crop);
-        return new CropResponse(savedCrop.getId(), savedCrop.getName(), savedCrop.getMeasureUnit(), savedCrop.getCategory());
+        return new CropResponse(savedCrop.getId(), savedCrop.getName(), savedCrop.getMeasureUnit().getId(), savedCrop.getCategory().getName());
     }
 
     @Override
     public List<CropResponse> addCrops(List<CropRequest> cropRequests) {
-    return cropRequests.stream()
-        .map(this::addCrop) // Reuse existing single-crop logic
-        .collect(Collectors.toList());
-}
-
+        return cropRequests.stream()
+                .map(this::addCrop)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public List<CropResponse> getAllCrops() {
         Farmer farmer = getCurrentFarmer();
         return cropRepository.findByFarmer(farmer).stream().map(crop ->
-                new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(), crop.getCategory())
+                new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit().getId(), crop.getCategory().getName())
         ).collect(Collectors.toList());
     }
 
     @Override
-    public List<CropResponse> searchByCategory(Category category) {
-        return cropRepository.findCropsByCategory(category).stream().map(crop ->
-                new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(), crop.getCategory())
+    public List<CropResponse> searchByCategoryName(String categoryName) {
+        return cropRepository.findCropsByCategoryName(categoryName).stream().map(crop ->
+                new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit().getId(), crop.getCategory().getName())
         ).collect(Collectors.toList());
     }
 
     @Override
     public Optional<List<CropResponse>> findByNameContains(String s) {
         return cropRepository.findByNameContainingIgnoreCase(s).map(crops -> crops.stream().map(
-                crop -> new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(), crop.getCategory())
+                crop -> new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit().getId(), crop.getCategory().getName())
         ).collect(Collectors.toList()));
     }
 
@@ -92,7 +103,7 @@ public class CropService implements ICropService {
         Farmer farmer = getCurrentFarmer();
         Crop crop = cropRepository.findById(id).filter(c -> c.getFarmer().getId().equals(farmer.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Crop not found"));
-        return new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(), crop.getCategory());
+        return new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit().getId(), crop.getCategory().getName());
     }
 
     @Override
@@ -100,11 +111,16 @@ public class CropService implements ICropService {
         Farmer farmer = getCurrentFarmer();
         Crop crop = cropRepository.findById(id).filter(c -> c.getFarmer().getId().equals(farmer.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Crop not found"));
+        MeasureUnit measureUnit = measureUnitService.getById(dto.measureUnitId(), );
+
         crop.setName(dto.name());
-        crop.setMeasureUnit(dto.measureUnit());
-        crop.setCategory(dto.category());
+        crop.setMeasureUnit(measureUnit);
+
+        Category category = categoryService.findByNameOrCreate(dto.categoryName());
+        crop.setCategory(category);
+
         Crop updated = cropRepository.save(crop);
-        return new CropResponse(updated.getId(), updated.getName(), updated.getMeasureUnit(), updated.getCategory());
+        return new CropResponse(updated.getId(), updated.getName(), updated.getMeasureUnit().getId(), updated.getCategory().getName());
     }
 
     @Override
@@ -122,7 +138,6 @@ public class CropService implements ICropService {
         Farmer farmer = getCurrentFarmer();
         Crop crop = cropRepository.findCropByNameContainingIgnoreCase(cropName).filter(c -> c.getFarmer().getId().equals(farmer.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Crop not found"));
-        return new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit(), crop.getCategory());
+        return new CropResponse(crop.getId(), crop.getName(), crop.getMeasureUnit().getId(), crop.getCategory().getName());
     }
-
 }

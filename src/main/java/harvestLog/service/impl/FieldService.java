@@ -29,6 +29,7 @@ public class FieldService {
                 .collect(Collectors.toList());
     }
 
+//    ##
     public Optional<FieldResponse> getById(Long id, Long farmerId) {
         return fieldRepo.findById(id)
                 .filter(field -> field.getFarmer().getId().equals(farmerId))

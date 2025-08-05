@@ -3,7 +3,7 @@ package harvestLog.service.impl;
 import harvestLog.exception.EntityNotFoundException;
 import harvestLog.model.HarvestRecord;
 import harvestLog.model.HarvestReport;
-import harvestLog.repository.HarvestRecordRepo;
+import harvestLog.repository.HarvestRecordRepository;
 import harvestLog.repository.HarvestReportRepository;
 import harvestLog.service.IHarvestReportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class HarvestReportService implements IHarvestReportService {
     @Autowired
     private HarvestReportRepository reportRepository;
     @Autowired
-    private HarvestRecordRepo recordRepo;
+    private HarvestRecordRepository recordRepo;
 
     // this method will be triggered weekly on Sunday at 12:00pm
     // Day of month (* = any day)/Month (* = any month)/Day of week (SUN = Sunday)

@@ -14,7 +14,7 @@ public interface ICropService {
     CropResponse addCrop(CropRequest crop);
     List<CropResponse> addCrops(List<CropRequest> cropRequests);
     List<CropResponse> getAllCrops();
-    List<CropResponse> searchByCategory(Category category);
+    List<CropResponse> searchByCategoryName(String categoryName);
     Optional<List<CropResponse>> findByNameContains(String s);
     CropResponse getCropById(Long id);
     CropResponse updateCrop(Long id, CropRequest crop);

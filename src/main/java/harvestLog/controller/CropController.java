@@ -48,8 +48,7 @@ public class CropController {
 
     @GetMapping("/search")
     public ResponseEntity<List<CropResponse>> searchCropsByCategory(@RequestParam String category) {
-        Category cat = Category.valueOf(category.toUpperCase());
-        return ResponseEntity.ok(cropService.searchByCategory(cat));
+        return ResponseEntity.ok(cropService.searchByCategoryName(category));
     }
 
     @GetMapping("/name-contains")

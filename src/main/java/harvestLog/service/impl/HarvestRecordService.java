@@ -9,7 +9,7 @@ import harvestLog.model.HarvestRecord;
 import harvestLog.repository.CropRepository;
 import harvestLog.repository.FarmerRepository;
 import harvestLog.repository.FieldRepository;
-import harvestLog.repository.HarvestRecordRepo;
+import harvestLog.repository.HarvestRecordRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -25,12 +25,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class HarvestRecordService {
-    private final HarvestRecordRepo recordRepo;
+    private final HarvestRecordRepository recordRepo;
     private final CropRepository cropRepo;
     private final FieldRepository fieldRepo;
     private final FarmerRepository farmerRepo;
 
-    public HarvestRecordService(HarvestRecordRepo recordRepo, CropRepository cropRepo,
+    public HarvestRecordService(HarvestRecordRepository recordRepo, CropRepository cropRepo,
                                 FieldRepository fieldRepo, FarmerRepository farmerRepo) {
         this.recordRepo = recordRepo;
         this.cropRepo = cropRepo;

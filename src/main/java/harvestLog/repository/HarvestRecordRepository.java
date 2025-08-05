@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface HarvestRecordRepo
+public interface HarvestRecordRepository
         extends JpaRepository<HarvestRecord, Long>, JpaSpecificationExecutor<HarvestRecord> {
 
     List<HarvestRecord> findByFarmerId(Long farmerId);

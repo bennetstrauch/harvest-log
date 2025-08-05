@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+//### fix measureunit and category properly
 @Service
 public class CropAiToolService {
 
@@ -39,7 +40,7 @@ public class CropAiToolService {
     @Tool(description = "Search for crops by category.")
     public List<CropResponse> searchByCategory(String category) {
         logger.info("Searching crops by category: '{}'", category);
-        return cropService.searchByCategory(parseCategory(category));
+        return cropService.searchByCategoryName(parseCategory(category));
     }
 
     @Tool(description = "Get a crop by its name.")
@@ -68,21 +69,21 @@ public class CropAiToolService {
         return "Crop with ID " + id + " was successfully deleted.";
     }
 
-    private Category parseCategory(String category) {
+    private String parseCategory(String category) {
         try {
-            return Category.valueOf(category.toUpperCase());
+            return category.toUpperCase();
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid category '{}'", category);
-            throw new IllegalArgumentException("Invalid category. Valid options: " + List.of(Category.values()));
+            throw new IllegalArgumentException("Invalid category.");
         }
     }
 
-    private MeasureUnit parseMeasureUnit(String unit) {
+    private Long parseMeasureUnit(String unit) {
         try {
-            return MeasureUnit.valueOf(unit.toUpperCase());
+            return 1L;
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid measure unit '{}'", unit);
-            throw new IllegalArgumentException("Invalid measure unit. Valid options: " + List.of(MeasureUnit.values()));
+            throw new IllegalArgumentException("Invalid measure unit.");
         }
     }
 }

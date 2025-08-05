@@ -15,10 +15,13 @@ public class Crop {
     private Long id;
 
     private String name;
-    @Enumerated(EnumType.STRING)
+
+    @ManyToOne
+    @JoinColumn(name = "measure_unit_id")
     private MeasureUnit measureUnit;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @ManyToOne

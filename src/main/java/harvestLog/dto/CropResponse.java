@@ -6,7 +6,7 @@ import harvestLog.model.MeasureUnit;
 public record CropResponse(
         Long id,
         String name,
-        MeasureUnit measureUnit,
-        Category category
+        Long measureUnitId,
+        String categoryName
 ) {
 }

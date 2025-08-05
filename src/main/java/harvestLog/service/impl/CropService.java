@@ -56,7 +56,7 @@ public class CropService implements ICropService {
     public CropResponse addCrop(CropRequest dto) {
         Farmer farmer = getCurrentFarmer();
         Crop crop = new Crop();
-        MeasureUnit measureUnit= measureUnitService.getById(dto.measureUnitId(), );
+        MeasureUnit measureUnit= measureUnitService.getById(dto.measureUnitId());
         crop.setName(dto.name());
         crop.setMeasureUnit(measureUnit);
         crop.setFarmer(farmer);
@@ -111,7 +111,7 @@ public class CropService implements ICropService {
         Farmer farmer = getCurrentFarmer();
         Crop crop = cropRepository.findById(id).filter(c -> c.getFarmer().getId().equals(farmer.getId()))
                 .orElseThrow(() -> new EntityNotFoundException("Crop not found"));
-        MeasureUnit measureUnit = measureUnitService.getById(dto.measureUnitId(), );
+        MeasureUnit measureUnit = measureUnitService.getById(dto.measureUnitId());
 
         crop.setName(dto.name());
         crop.setMeasureUnit(measureUnit);

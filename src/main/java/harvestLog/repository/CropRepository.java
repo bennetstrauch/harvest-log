@@ -1,6 +1,5 @@
 package harvestLog.repository;
 
-import harvestLog.model.Category;
 import harvestLog.model.Crop;
 import harvestLog.model.Farmer;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -4,8 +4,6 @@ package harvestLog.service;
 import harvestLog.dto.CropRequest;
 import harvestLog.dto.CropResponse;
 import harvestLog.dto.HarvestSummaryResponse;
-import harvestLog.model.Category;
-import harvestLog.model.Crop;
 
 import java.util.List;
 import java.util.Optional;

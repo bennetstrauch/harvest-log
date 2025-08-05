@@ -3,8 +3,6 @@ package harvestLog.service.ai;
 import harvestLog.dto.CropRequest;
 import harvestLog.dto.CropResponse;
 import harvestLog.dto.HarvestSummaryResponse;
-import harvestLog.model.Category;
-import harvestLog.model.MeasureUnit;
 import harvestLog.service.impl.CropService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

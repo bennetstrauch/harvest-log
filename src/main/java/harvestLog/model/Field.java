@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Field {
+public class Field implements SoftActivatable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
      Long id;
@@ -20,6 +20,10 @@ public class Field {
 // #leave it lazy?
     @ManyToOne(fetch = FetchType.LAZY)
     Farmer farmer;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
 }
 
 

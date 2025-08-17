@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Crop {
+public class Crop implements SoftActivatable{
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -27,4 +27,8 @@ public class Crop {
     @ManyToOne
     @JoinColumn(name = "farmer_id")
     private Farmer farmer;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
 }

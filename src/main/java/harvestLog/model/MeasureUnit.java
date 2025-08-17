@@ -12,7 +12,7 @@ import lombok.*;
                 @UniqueConstraint(columnNames = {"farmer_id", "name"})
         }
 )
-public class MeasureUnit {
+public class MeasureUnit implements SoftActivatable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -22,8 +22,13 @@ public class MeasureUnit {
     @JoinColumn(name = "farmer_id")
     private Farmer farmer;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String name;
 
     private String abbreviation;
+
+//    ##make interface?
+    @Column(nullable = false)
+    private boolean active = true;
+
 }

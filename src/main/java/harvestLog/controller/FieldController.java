@@ -1,4 +1,5 @@
 package harvestLog.controller;
+
 import harvestLog.dto.FieldRequest;
 import harvestLog.dto.FieldResponse;
 import harvestLog.service.impl.FieldService;
@@ -13,6 +14,7 @@ import static harvestLog.security.FarmerIdExtractor.getAuthenticatedFarmerId;
 @RestController
 @RequestMapping("/api/fields")
 public class FieldController {
+
     private final FieldService fieldService;
 
     public FieldController(FieldService fieldService) {
@@ -20,9 +22,9 @@ public class FieldController {
     }
 
     @GetMapping
-    public List<FieldResponse> getAllFields() {
+    public ResponseEntity<List<FieldResponse>> getAllFields() {
         Long farmerId = getAuthenticatedFarmerId();
-        return fieldService.getAllForFarmer(farmerId);
+        return ResponseEntity.ok(fieldService.getAllForFarmer(farmerId));
     }
 
     @GetMapping("/{id}")
@@ -34,9 +36,10 @@ public class FieldController {
     }
 
     @PostMapping
-    public FieldResponse create(@Valid @RequestBody FieldRequest request) {
+    public ResponseEntity<FieldResponse> create(@Valid @RequestBody FieldRequest request) {
         Long farmerId = getAuthenticatedFarmerId();
-        return fieldService.create(request, farmerId);
+        FieldResponse created = fieldService.create(request, farmerId);
+        return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("/{id}")
@@ -51,6 +54,7 @@ public class FieldController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         Long farmerId = getAuthenticatedFarmerId();
         boolean deleted = fieldService.delete(id, farmerId);
-        return deleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
+
 }

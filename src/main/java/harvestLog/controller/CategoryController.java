@@ -1,11 +1,11 @@
 package harvestLog.controller;
 
-import harvestLog.model.Category;
-import harvestLog.service.ICategoryService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import harvestLog.dto.CategoryRequest;
+import harvestLog.dto.CategoryResponse;
+import harvestLog.service.impl.CategoryService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -13,15 +13,42 @@ import java.util.List;
 @RequestMapping("/api/categories")
 public class CategoryController {
 
-    @Autowired
-    private ICategoryService categoryService;
+    private final CategoryService categoryService;
 
-    @GetMapping
-    public List<Category> getAllCategories() {
-        return categoryService.getAll();
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<CategoryResponse>> getAllCategories() {
+        return ResponseEntity.ok(categoryService.getAll());
+    }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryResponse> getCategory(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(categoryService.getById(id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryRequest request) {
+        return ResponseEntity.status(201).body(categoryService.create(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoryResponse> update(@PathVariable Long id, @Valid @RequestBody CategoryRequest request) {
+        return categoryService.update(id, request)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        boolean deleted = categoryService.delete(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
 
 }
-

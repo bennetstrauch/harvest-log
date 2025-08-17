@@ -6,6 +6,7 @@ import harvestLog.model.Farmer;
 import harvestLog.model.Field;
 import harvestLog.repository.FarmerRepository;
 import harvestLog.repository.FieldRepository;
+import harvestLog.service.IFieldService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class FieldService {
+public class FieldService implements IFieldService {
     private final FieldRepository fieldRepo;
     private final FarmerRepository farmerRepo;
 

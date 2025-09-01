@@ -14,4 +14,12 @@ public interface CropRepository extends JpaRepository<Crop, Long> {
     Optional<List<Crop>> findByNameContainingIgnoreCase(String name);
     // just deleted, now added
     Optional<Crop> findCropByNameContainingIgnoreCase(String cropName);
+
+    Optional<Crop> findByNameIgnoreCaseAndFarmerId(String name, Long farmerId);
+
+    Optional<Crop> findByNameContainingIgnoreCaseAndFarmerId(String substring, Long farmerId);
+
+    Optional<Crop> findByCategoryNameIgnoreCaseAndFarmerId(String categoryName, Long farmerId);
+
+    List<Crop> findByFarmerId(Long farmerId);
 }

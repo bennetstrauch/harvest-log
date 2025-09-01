@@ -1,10 +1,9 @@
 package harvestLog.controller;
-
+//######## develop frontend ui to test backend...
 import harvestLog.dto.CropRequest;
 import harvestLog.dto.CropResponse;
 import harvestLog.dto.HarvestSummaryResponse;
 import harvestLog.service.ICropService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,54 +13,61 @@ import java.util.List;
 @RequestMapping("/api/crops")
 public class CropController {
 
-    @Autowired
-    private ICropService cropService;
+    private final ICropService cropService;
 
-    @PostMapping
-    public ResponseEntity<CropResponse> createCrop(@RequestBody CropRequest dto) {
-        return ResponseEntity.ok(cropService.addCrop(dto));
+    public CropController(ICropService cropService) {
+        this.cropService = cropService;
     }
-
-    @PostMapping("/batch")
-    public ResponseEntity<List<CropResponse>> createCrops(@RequestBody List<CropRequest> cropRequests) {
-    List<CropResponse> created = cropService.addCrops(cropRequests);
-    return ResponseEntity.ok(created);
-}
-
 
     @GetMapping
-    public ResponseEntity<List<CropResponse>> getAllCrops() {
-        return ResponseEntity.ok(cropService.getAllCrops());
-    }
-
-    @GetMapping("/{id}/harvests")
-    public ResponseEntity<List<HarvestSummaryResponse>> getHarvestsByCrop(@PathVariable Long id) {
-        return ResponseEntity.ok(cropService.getHarvestsByCrop(id));
+    public ResponseEntity<List<CropResponse>> getAll(@RequestParam Long farmerId) {
+        return ResponseEntity.ok(cropService.getAll(farmerId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CropResponse> getCropById(@PathVariable Long id) {
-        return ResponseEntity.ok(cropService.getCropById(id));
+    public ResponseEntity<CropResponse> getById(@PathVariable Long id, @RequestParam Long farmerId) {
+        return cropService.getById(id, farmerId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<CropResponse>> searchCropsByCategory(@RequestParam String category) {
-        return ResponseEntity.ok(cropService.searchByCategoryName(category));
+    @PostMapping
+    public ResponseEntity<CropResponse> create(@RequestBody CropRequest request, @RequestParam Long farmerId) {
+        return ResponseEntity.ok(cropService.create(request, farmerId));
     }
 
-    @GetMapping("/name-contains")
-    public ResponseEntity<List<CropResponse>> searchCropsByName(@RequestParam String s) {
-        return cropService.findByNameContains(s).map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
+    @PostMapping("/batch")
+    public ResponseEntity<List<CropResponse>> createBatch(@RequestBody List<CropRequest> requests, @RequestParam Long farmerId) {
+        return ResponseEntity.ok(cropService.createBatch(requests, farmerId));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CropResponse> updateCrop(@PathVariable Long id, @RequestBody CropRequest dto) {
-        return ResponseEntity.ok(cropService.updateCrop(id, dto));
+    public ResponseEntity<CropResponse> update(@PathVariable Long id, @RequestBody CropRequest request, @RequestParam Long farmerId) {
+        return cropService.update(id, request, farmerId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCrop(@PathVariable Long id) {
-        cropService.deleteCrop(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> delete(@PathVariable Long id, @RequestParam Long farmerId) {
+        boolean deleted = cropService.delete(id, farmerId);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/{id}/harvests")
+    public ResponseEntity<List<HarvestSummaryResponse>> getHarvestsByCrop(@PathVariable Long id, @RequestParam Long farmerId) {
+        return ResponseEntity.ok(cropService.getHarvestsByCrop(id, farmerId));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<CropResponse>> searchByCategory(@RequestParam String category, @RequestParam Long farmerId) {
+        return ResponseEntity.ok(cropService.searchByCategoryName(category, farmerId));
+    }
+
+    @GetMapping("/name-contains")
+    public ResponseEntity<List<CropResponse>> searchByName(@RequestParam String s, @RequestParam Long farmerId) {
+        return cropService.findByNameContains(s, farmerId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
 }

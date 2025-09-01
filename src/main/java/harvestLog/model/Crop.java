@@ -5,18 +5,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-public class Crop implements SoftActivatable{
+@Table(
+        uniqueConstraints = @UniqueConstraint(columnNames = {"farmer_id", "name"})
+)
+public class Crop implements SoftActivatable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "measure_unit_id")
     private MeasureUnit measureUnit;
 
@@ -24,11 +28,11 @@ public class Crop implements SoftActivatable{
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "farmer_id")
     private Farmer farmer;
 
     @Column(nullable = false)
     private boolean active = true;
-
 }
+

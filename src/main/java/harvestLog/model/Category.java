@@ -9,17 +9,28 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "categories")
-public class Category {
+@Table(
+        name = "categories",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"farmer_id", "name"}))
+public class Category implements SoftActivatable{
 
     @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
-    public Category(String name) {
-        this.name = name.toUpperCase(); // normalize
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "farmer_id")
+    private Farmer farmer;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
+    public Category(String name, Farmer farmer) {
+        this.name = name.toUpperCase();
+        this.farmer = farmer;
+        this.active = true;
     }
 
 }

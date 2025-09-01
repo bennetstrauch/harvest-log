@@ -3,61 +3,125 @@ package harvestLog.service.impl;
 import harvestLog.dto.CategoryRequest;
 import harvestLog.dto.CategoryResponse;
 import harvestLog.model.Category;
+import harvestLog.model.Farmer;
 import harvestLog.repository.CategoryRepository;
+import harvestLog.repository.FarmerRepository;
 import harvestLog.service.ICategoryService;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService implements ICategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final FarmerRepository farmerRepository;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, FarmerRepository farmerRepository) {
         this.categoryRepository = categoryRepository;
+        this.farmerRepository = farmerRepository;
     }
 
     @Override
-    public List<CategoryResponse> getAll() {
-        return categoryRepository.findAll(Sort.by("name")).stream()
-                .map(c -> new CategoryResponse(c.getId(), c.getName()))
-                .toList();
+    public List<CategoryResponse> getAll(Long farmerId) {
+        return categoryRepository.findByFarmerId(farmerId, Sort.by("name")).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public CategoryResponse getById(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found with id " + id));
-        return new CategoryResponse(category.getId(), category.getName());
-    }
-
-    @Override
-    public CategoryResponse create(CategoryRequest request) {
-        Category category = new Category(request.name());
-        Category saved = categoryRepository.save(category);
-        return new CategoryResponse(saved.getId(), saved.getName());
-    }
-
-    @Override
-    public Optional<CategoryResponse> update(Long id, CategoryRequest request) {
+    public Optional<CategoryResponse> getById(Long id, Long farmerId) {
         return categoryRepository.findById(id)
-                .map(existing -> {
-                    existing.setName(request.name().toUpperCase());
-                    Category updated = categoryRepository.save(existing);
-                    return new CategoryResponse(updated.getId(), updated.getName());
+                .filter(cat -> cat.getFarmer().getId().equals(farmerId))
+                .map(this::toResponse);
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse create(CategoryRequest request, Long farmerId) {
+        Category entity = toEntity(request, farmerId);
+        Category saved = categoryRepository.save(entity);
+        return toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public Optional<CategoryResponse> update(Long id, CategoryRequest request, Long farmerId) {
+        return categoryRepository.findById(id)
+                .filter(cat -> cat.getFarmer().getId().equals(farmerId))
+                .map(cat -> {
+                    cat.setName(request.name().toUpperCase());
+                    Category updated = categoryRepository.save(cat);
+                    return toResponse(updated);
                 });
     }
 
     @Override
-    public boolean delete(Long id) {
+    @Transactional
+    public boolean delete(Long id, Long farmerId) {
         return categoryRepository.findById(id)
-                .map(category -> {
-                    categoryRepository.delete(category);
+                .filter(cat -> cat.getFarmer().getId().equals(farmerId))
+                .map(cat -> {
+                    categoryRepository.delete(cat);
                     return true;
                 })
                 .orElse(false);
+    }
+
+    /**
+     * Internal domain method used by other services.
+     * Returns a Category entity (reactivating if needed) for the given farmer.
+     */
+    @Override
+    @Transactional
+    public Category getOrCreateActiveByName(String name, Long farmerId) {
+        String normalized = name == null ? null : name.toUpperCase();
+        if (normalized == null || normalized.isBlank()) {
+            throw new IllegalArgumentException("Category name must not be empty");
+        }
+
+        Optional<Category> existing = categoryRepository.findByNameIgnoreCaseAndFarmerId(normalized, farmerId);
+        if (existing.isPresent()) {
+            Category cat = existing.get();
+            if (!cat.isActive()) {
+                cat.setActive(true);
+                cat = categoryRepository.save(cat);
+            }
+            return cat;
+        }
+
+        Farmer farmer = farmerRepository.findById(farmerId)
+                .orElseThrow(() -> new IllegalArgumentException("Farmer not found: " + farmerId));
+
+        Category newCategory = new Category();
+        newCategory.setName(normalized);
+        newCategory.setFarmer(farmer);
+        newCategory.setActive(true);
+
+        return categoryRepository.save(newCategory);
+    }
+
+    // ----------------------
+    // Mapping helpers
+    // ----------------------
+    private Category toEntity(CategoryRequest request, Long farmerId) {
+        Farmer farmer = farmerRepository.findById(farmerId)
+                .orElseThrow(() -> new IllegalArgumentException("Farmer not found: " + farmerId));
+        Category category = new Category();
+        category.setName(request.name().toUpperCase());
+        category.setFarmer(farmer);
+        category.setActive(true);
+        return category;
+    }
+
+    private CategoryResponse toResponse(Category category) {
+        return new CategoryResponse(
+                category.getId(),
+                category.getName()
+        );
     }
 }

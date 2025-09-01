@@ -27,8 +27,14 @@ public class MeasureUnit implements SoftActivatable {
 
     private String abbreviation;
 
-//    ##make interface?
     @Column(nullable = false)
     private boolean active = true;
 
+    // ✅ Convenience constructor for creation (avoids passing active flag)
+    public MeasureUnit(Farmer farmer, String name, String abbreviation) {
+        this.farmer = farmer;
+        this.name = name;
+        this.abbreviation = abbreviation;
+        this.active = true;
+    }
 }

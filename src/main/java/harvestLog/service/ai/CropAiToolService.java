@@ -10,8 +10,10 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
-//### fix measureunit and category properly
+import static harvestLog.security.FarmerIdExtractor.getAuthenticatedFarmerId;
+
 @Service
 public class CropAiToolService {
 
@@ -23,65 +25,64 @@ public class CropAiToolService {
         this.cropService = cropService;
     }
 
-    @Tool(description = "Add a new crop by specifying name, measure unit (e.g. pounds or pieces), and category.")
-    public CropResponse addCrop(String name, String measureUnit, String category) {
-        logger.info("Adding new crop: name='{}', measureUnit='{}', category='{}'", name, measureUnit, category);
-        return cropService.addCrop(new CropRequest(name, parseMeasureUnit(measureUnit), parseCategory(category)));
+    @Tool(description = "Add a new crop by specifying name, measure unit ID, and category name.")
+    public CropResponse addCrop(String name, Long measureUnitId, String categoryName) {
+        Long farmerId = getAuthenticatedFarmerId();
+        logger.info("Adding new crop: name='{}', measureUnitId={}, category='{}'", name, measureUnitId, categoryName);
+
+        CropRequest request = new CropRequest(name, measureUnitId, categoryName);
+        return cropService.create(request, farmerId);
     }
 
-    @Tool(description = "Get a list of all crops for the farmer.")
+    @Tool(description = "Get a list of all crops for the current farmer.")
     public List<CropResponse> getAllCrops() {
-        logger.info("Fetching all crops for the current farmer");
-        return cropService.getAllCrops();
+        Long farmerId = getAuthenticatedFarmerId();
+        logger.info("Fetching all crops for farmer {}", farmerId);
+        return cropService.getAll(farmerId);
     }
 
-    @Tool(description = "Search for crops by category.")
-    public List<CropResponse> searchByCategory(String category) {
-        logger.info("Searching crops by category: '{}'", category);
-        return cropService.searchByCategoryName(parseCategory(category));
+    @Tool(description = "Search for crops by category name.")
+    public List<CropResponse> searchByCategory(String categoryName) {
+        Long farmerId = getAuthenticatedFarmerId();
+        logger.info("Searching crops by category '{}' for farmer {}", categoryName, farmerId);
+        return cropService.searchByCategoryName(categoryName, farmerId);
     }
 
-    @Tool(description = "Get a crop by its name.")
-    public CropResponse getCropByName(String cropName) {
-        logger.info("Getting crop by name: '{}'", cropName);
-        return cropService.getCropByName(cropName);
+    @Tool(description = "Get crops by name (substring match).")
+    public List<CropResponse> searchByName(String namePart) {
+        Long farmerId = getAuthenticatedFarmerId();
+        logger.info("Searching crops by name containing '{}' for farmer {}", namePart, farmerId);
+        Optional<List<CropResponse>> results = cropService.findByNameContains(namePart, farmerId);
+        return results.orElse(List.of());
     }
 
     @Tool(description = "Get all harvest records for a given crop ID.")
     public List<HarvestSummaryResponse> getHarvestsByCrop(Long cropId) {
-        logger.info("Fetching harvests for cropId={}", cropId);
-        return cropService.getHarvestsByCrop(cropId);
+        Long farmerId = getAuthenticatedFarmerId();
+        logger.info("Fetching harvests for cropId={} and farmer {}", cropId, farmerId);
+        return cropService.getHarvestsByCrop(cropId, farmerId);
     }
 
-    @Tool(description = "Update an existing crop by its ID. Provide the new name, measure unit (e.g. POUNDS, PIECES), and category (e.g. VEGETABLE, FRUIT, etc.)")
-    public CropResponse updateCrop(Long id, String name, String measureUnit, String category) {
-        logger.info("Updating crop: id={}, name='{}', measureUnit='{}', category='{}'", id, name, measureUnit, category);
-        CropRequest request = new CropRequest(name, parseMeasureUnit(measureUnit), parseCategory(category));
-        return cropService.updateCrop(id, request);
+    @Tool(description = "Update an existing crop by its ID. Provide the new name, measure unit ID, and category name.")
+    public CropResponse updateCrop(Long id, String name, Long measureUnitId, String categoryName) {
+        Long farmerId = getAuthenticatedFarmerId();
+        logger.info("Updating crop: id={}, name='{}', measureUnitId={}, category='{}'", id, name, measureUnitId, categoryName);
+
+        CropRequest request = new CropRequest(name, measureUnitId, categoryName);
+        return cropService.update(id, request, farmerId)
+                .orElseThrow(() -> new IllegalArgumentException("Crop not found or not owned by farmer"));
     }
 
     @Tool(description = "Delete a crop by its ID")
     public String deleteCrop(Long id) {
-        logger.info("Deleting crop with id={}", id);
-        cropService.deleteCrop(id);
-        return "Crop with ID " + id + " was successfully deleted.";
-    }
+        Long farmerId = getAuthenticatedFarmerId();
+        logger.info("Deleting crop with id={} for farmer {}", id, farmerId);
 
-    private String parseCategory(String category) {
-        try {
-            return category.toUpperCase();
-        } catch (IllegalArgumentException e) {
-            logger.warn("Invalid category '{}'", category);
-            throw new IllegalArgumentException("Invalid category.");
-        }
-    }
-
-    private Long parseMeasureUnit(String unit) {
-        try {
-            return 1L;
-        } catch (IllegalArgumentException e) {
-            logger.warn("Invalid measure unit '{}'", unit);
-            throw new IllegalArgumentException("Invalid measure unit.");
+        boolean deleted = cropService.delete(id, farmerId);
+        if (deleted) {
+            return "Crop with ID " + id + " was successfully deleted.";
+        } else {
+            throw new IllegalArgumentException("Crop not found or not owned by farmer");
         }
     }
 }

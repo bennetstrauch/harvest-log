@@ -7,3 +7,6 @@ public record CropRequest(
 
 ) {
 }
+
+
+//public record CropRequestBatch

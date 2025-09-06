@@ -4,7 +4,10 @@ import harvestLog.dto.CropRequest;
 import harvestLog.dto.CropResponse;
 import harvestLog.dto.HarvestSummaryResponse;
 import harvestLog.service.ICropService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,8 +45,13 @@ public class CropController {
     }
 
     @PostMapping("/batch")
-    public ResponseEntity<List<CropResponse>> createBatch(@RequestBody List<CropRequest> requests) {
-        Long farmerId = getAuthenticatedFarmerId();
+    public ResponseEntity<List<CropResponse>> createBatch(@RequestBody List<CropRequest> requests, HttpServletRequest req) {
+        String authHeader = req.getHeader("Authorization");
+        System.out.println("=== /api/crops/batch called. Authorization header present? " + (authHeader != null));
+        System.out.println("Authorization: " + authHeader);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("SecurityContext Authentication: " + auth);
+        Long farmerId = getAuthenticatedFarmerId(); // will log failure if any
         return ResponseEntity.ok(cropService.createBatch(requests, farmerId));
     }
 

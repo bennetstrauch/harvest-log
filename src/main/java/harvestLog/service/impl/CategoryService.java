@@ -48,6 +48,54 @@ public class CategoryService implements ICategoryService {
         return toResponse(saved);
     }
 
+    @Transactional
+    @Override
+    public List<CategoryResponse> createBatch(List<CategoryRequest> requests, Long farmerId) {
+        if (requests == null || requests.isEmpty()) {
+            return List.of();
+        }
+
+        Farmer farmer = farmerRepository.findById(farmerId)
+                .orElseThrow(() -> new IllegalArgumentException("Farmer not found: " + farmerId));
+
+        List<Category> categoriesToSave = requests.stream()
+                .map(req -> {
+                    String name = req.name().toUpperCase().trim();
+                    if (name.isBlank()) {
+                        throw new IllegalArgumentException("Category name must not be empty");
+                    }
+
+                    // Check if it already exists
+                    Optional<Category> existing = categoryRepository.findByNameIgnoreCaseAndFarmerId(name, farmerId);
+                    if (existing.isPresent()) {
+                        Category cat = existing.get();
+                        if (!cat.isActive()) {
+                            cat.setActive(true);
+                            return categoryRepository.save(cat);
+                        } else {
+                            return cat;
+                        }
+                    }
+
+                    // Create new category
+                    Category newCategory = new Category();
+                    newCategory.setName(name);
+                    newCategory.setFarmer(farmer);
+                    newCategory.setActive(true);
+                    return newCategory;
+                })
+                .toList();
+
+        // Save all new categories
+        List<Category> savedCategories = categoryRepository.saveAll(categoriesToSave);
+
+        // Map to responses
+        return savedCategories.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+
     @Override
     @Transactional
     public Optional<CategoryResponse> update(Long id, CategoryRequest request, Long farmerId) {

@@ -2,9 +2,11 @@ package harvestLog.controller;
 
 import harvestLog.dto.CategoryRequest;
 import harvestLog.dto.CategoryResponse;
+import harvestLog.model.Farmer;
 import harvestLog.service.ICategoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +43,15 @@ public class CategoryController {
         CategoryResponse created = categoryService.create(request, farmerId);
         return ResponseEntity.status(201).body(created);
     }
+
+    @PostMapping("/categories/batch")
+    public List<CategoryResponse> createCategories(
+            @RequestBody List<CategoryRequest> categoryRequests) {
+        Long farmerId = getAuthenticatedFarmerId();
+        return categoryService.createBatch(categoryRequests, farmerId);
+    }
+
+
 
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponse> update(@PathVariable Long id,

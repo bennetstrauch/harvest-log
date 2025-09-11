@@ -46,12 +46,9 @@ public class CropController {
 
     @PostMapping("/batch")
     public ResponseEntity<List<CropResponse>> createBatch(@RequestBody List<CropRequest> requests, HttpServletRequest req) {
-        String authHeader = req.getHeader("Authorization");
-        System.out.println("=== /api/crops/batch called. Authorization header present? " + (authHeader != null));
-        System.out.println("Authorization: " + authHeader);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("SecurityContext Authentication: " + auth);
-        Long farmerId = getAuthenticatedFarmerId(); // will log failure if any
+        System.out.println("/api/crops/batch payload:");
+        requests.forEach(r -> System.out.println("  req -> name: " + r.name() + ", measureUnitId: " + r.measureUnitId() + ", categoryID: " + r.categoryId()));
+        Long farmerId = getAuthenticatedFarmerId();
         return ResponseEntity.ok(cropService.createBatch(requests, farmerId));
     }
 
@@ -70,23 +67,23 @@ public class CropController {
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/{id}/harvests")
-    public ResponseEntity<List<HarvestSummaryResponse>> getHarvestsByCrop(@PathVariable Long id) {
-        Long farmerId = getAuthenticatedFarmerId();
-        return ResponseEntity.ok(cropService.getHarvestsByCrop(id, farmerId));
-    }
+//    @GetMapping("/{id}/harvests")
+//    public ResponseEntity<List<HarvestSummaryResponse>> getHarvestsByCrop(@PathVariable Long id) {
+//        Long farmerId = getAuthenticatedFarmerId();
+//        return ResponseEntity.ok(cropService.getHarvestsByCrop(id, farmerId));
+//    }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<CropResponse>> searchByCategory(@RequestParam String category) {
-        Long farmerId = getAuthenticatedFarmerId();
-        return ResponseEntity.ok(cropService.searchByCategoryName(category, farmerId));
-    }
-
-    @GetMapping("/name-contains")
-    public ResponseEntity<List<CropResponse>> searchByName(@RequestParam String s) {
-        Long farmerId = getAuthenticatedFarmerId();
-        return cropService.findByNameContains(s, farmerId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.noContent().build());
-    }
+//    @GetMapping("/search")
+//    public ResponseEntity<List<CropResponse>> searchByCategory(@RequestParam String category) {
+//        Long farmerId = getAuthenticatedFarmerId();
+//        return ResponseEntity.ok(cropService.searchByCategoryName(category, farmerId));
+//    }
+//
+//    @GetMapping("/name-contains")
+//    public ResponseEntity<List<CropResponse>> searchByName(@RequestParam String s) {
+//        Long farmerId = getAuthenticatedFarmerId();
+//        return cropService.findByNameContains(s, farmerId)
+//                .map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.noContent().build());
+//    }
 }

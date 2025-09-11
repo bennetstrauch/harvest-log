@@ -15,7 +15,7 @@ public interface ICropService {
     Optional<CropResponse> update(Long id, CropRequest request, Long farmerId);
     boolean delete(Long id, Long farmerId);
 
-    List<HarvestSummaryResponse> getHarvestsByCrop(Long cropId, Long farmerId);
-    List<CropResponse> searchByCategoryName(String categoryName, Long farmerId);
-    Optional<List<CropResponse>> findByNameContains(String substring, Long farmerId);
+//    List<HarvestSummaryResponse> getHarvestsByCrop(Long cropId, Long farmerId);
+//    List<CropResponse> searchByCategoryName(String categoryName, Long farmerId);
+//    Optional<List<CropResponse>> findByNameContains(String substring, Long farmerId);
 }

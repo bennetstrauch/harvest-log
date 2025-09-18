@@ -14,6 +14,7 @@ public interface ICropService {
     List<CropResponse> createBatch(List<CropRequest> requests, Long farmerId);
     Optional<CropResponse> update(Long id, CropRequest request, Long farmerId);
     boolean delete(Long id, Long farmerId);
+    int deleteBatch(List<Long> ids, Long farmerId);
 
 //    List<HarvestSummaryResponse> getHarvestsByCrop(Long cropId, Long farmerId);
 //    List<CropResponse> searchByCategoryName(String categoryName, Long farmerId);

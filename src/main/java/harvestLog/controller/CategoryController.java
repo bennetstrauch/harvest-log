@@ -44,7 +44,7 @@ public class CategoryController {
         return ResponseEntity.status(201).body(created);
     }
 
-    @PostMapping("/categories/batch")
+    @PostMapping("/batch")
     public List<CategoryResponse> createCategories(
             @RequestBody List<CategoryRequest> categoryRequests) {
         Long farmerId = getAuthenticatedFarmerId();

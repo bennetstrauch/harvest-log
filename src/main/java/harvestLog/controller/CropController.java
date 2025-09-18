@@ -60,6 +60,13 @@ public class CropController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @DeleteMapping("/batch")
+    public ResponseEntity<Void> deleteBatch(@RequestBody List<Long> ids) {
+        Long farmerId = getAuthenticatedFarmerId();
+        int deletedCount = cropService.deleteBatch(ids, farmerId);
+        return deletedCount > 0 ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         Long farmerId = getAuthenticatedFarmerId();

@@ -177,19 +177,48 @@ public class CropService implements ICropService {
     @Override
     @Transactional
     public Optional<CropResponse> update(Long id, CropRequest request, Long farmerId) {
+        System.out.println("UPDATE CROP - ID: " + id + ", Request: " + request + ", FarmerID: " + farmerId);
         return cropRepo.findById(id)
                 .filter(c -> c.getFarmer().getId().equals(farmerId))
                 .map(c -> {
-                    c.setName(request.name());
+                    System.out.println("BEFORE UPDATE - Crop: " + c.getName() + ", MeasureUnit: " +
+                        (c.getMeasureUnit() != null ? c.getMeasureUnit().getId() : "null"));
+
+                    // Only update fields that are provided (not null)
+                    if (request.name() != null) {
+                        c.setName(request.name());
+                        System.out.println("Updated name to: " + request.name());
+                    }
+
+                    if (request.measureUnitId() != null) {
+                        System.out.println("Updating measureUnitId to: " + request.measureUnitId());
+                        MeasureUnit mu = measureUnitRepo.findById(request.measureUnitId())
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                        "Measure unit not found: " + request.measureUnitId()));
+                        c.setMeasureUnit(mu);
+                        System.out.println("MeasureUnit found and set: " + mu.getName() + " (ID: " + mu.getId() + ")");
+                    }
+
                     if (request.categoryId() != null) {
+                        System.out.println("Updating categoryId to: " + request.categoryId());
                         Category cat = categoryRepo.findById(request.categoryId())
                                 .orElseThrow(() -> new IllegalArgumentException(
                                         "Category not found: " + request.categoryId()));
                         c.setCategory(cat);
-                    } else {
+                        System.out.println("Category found and set: " + cat.getName() + " (ID: " + cat.getId() + ")");
+                    } else if (request.categoryId() == null && request.name() != null) {
+                        // Only clear category if this is a complete update (name provided)
                         c.setCategory(null);
+                        System.out.println("Category cleared");
                     }
-                    return toResponse(cropRepo.save(c));
+
+                    Crop saved = cropRepo.save(c);
+                    System.out.println("AFTER SAVE - Crop: " + saved.getName() + ", MeasureUnit: " +
+                        (saved.getMeasureUnit() != null ? saved.getMeasureUnit().getId() : "null"));
+
+                    CropResponse response = toResponse(saved);
+                    System.out.println("RESPONSE - " + response);
+                    return response;
                 });
     }
 
@@ -203,6 +232,18 @@ public class CropService implements ICropService {
                     return true;
                 })
                 .orElse(false);
+    }
+
+    @Override
+    @Transactional
+    public int deleteBatch(List<Long> ids, Long farmerId) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+
+        // Use a single query to find and delete crops belonging to the farmer
+        int deletedCount = cropRepo.deleteByIdInAndFarmerId(ids, farmerId);
+        return deletedCount;
     }
 
     // ===== Mapping helpers =====

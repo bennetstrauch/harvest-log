@@ -46,6 +46,12 @@ public class HarvestRecordService {
 
     public List<HarvestRecordResponse> getFilteredRecords(Long farmerId, List<Long> fieldIds, List<Long> cropIds,
                                                           LocalDate startDate, LocalDate endDate) {
+        // Fast path: no extra filters — use JOIN FETCH to avoid N+1 on farmer + fields
+        if ((fieldIds == null || fieldIds.isEmpty()) && (cropIds == null || cropIds.isEmpty())) {
+            return recordRepo.findByFarmerIdAndDateRange(farmerId, startDate, endDate)
+                    .stream().map(this::toResponse).collect(Collectors.toList());
+        }
+
         return recordRepo.findAll((Root<HarvestRecord> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
                     List<Predicate> predicates = new ArrayList<>();
                     if (farmerId != null) {
@@ -151,10 +157,14 @@ public class HarvestRecordService {
         return new HarvestRecordResponse(
                 record.getId(),
                 record.getDate(),
-                record.getCrop().getId(),
+                record.getCrop() != null ? record.getCrop().getId() : null,
                 record.getFields().stream().map(Field::getId).collect(Collectors.toList()),
                 record.getHarvestedQuantity(),
-                record.getFarmer().getId()
+                record.getFarmer().getId(),
+                record.isArchived(),
+                record.getArchivedCropName(),
+                record.getArchivedFieldNames(),
+                record.getArchivedMeasureUnitName()
         );
     }
 }

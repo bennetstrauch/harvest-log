@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static harvestLog.security.FarmerIdExtractor.getAuthenticatedFarmerId;
+
 @Service
 public class FieldAiToolService {
 
@@ -40,14 +42,14 @@ public class FieldAiToolService {
     public FieldResponse createField(String name) {
         Long farmerId = getAuthenticatedFarmerId();
         logger.info("Creating new field with name='{}' for farmerId={}", name, farmerId);
-        return fieldService.create(new FieldRequest(name), farmerId);
+        return fieldService.create(new FieldRequest(name, true), farmerId);
     }
 
     @Tool(description = "Update an existing field by ID with a new name.")
     public FieldResponse updateField(Long id, String newName) {
         Long farmerId = getAuthenticatedFarmerId();
         logger.info("Updating field with id={} to new name='{}' for farmerId={}", id, newName, farmerId);
-        return fieldService.update(id, new FieldRequest(newName), farmerId)
+        return fieldService.update(id, new FieldRequest(newName, true), farmerId)
                 .orElseThrow(() -> new IllegalArgumentException("Field not found or access denied."));
     }
 
@@ -62,7 +64,4 @@ public class FieldAiToolService {
         return "Field with ID " + id + " was successfully deleted.";
     }
 
-    private Long getAuthenticatedFarmerId() {
-        return harvestLog.security.FarmerIdExtractor.getAuthenticatedFarmerId();
-    }
 }

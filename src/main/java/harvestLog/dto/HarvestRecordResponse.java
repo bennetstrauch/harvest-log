@@ -9,5 +9,9 @@ public record HarvestRecordResponse(
         Long cropId,
         List<Long> fieldIds,
         Double harvestedQuantity,
-        Long farmerId
+        Long farmerId,
+        boolean archived,
+        String archivedCropName,
+        String archivedFieldNames,
+        String archivedMeasureUnitName
 ) {}

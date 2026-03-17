@@ -17,14 +17,24 @@ public class ControllerLoggingAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerLoggingAspect.class);
 
+    // Auth methods that may contain passwords or tokens — never log their arguments
+    private static final java.util.Set<String> SENSITIVE_METHODS = java.util.Set.of(
+            "login", "register", "resetPassword", "forgotPassword", "resendVerification", "verifyEmail"
+    );
+
     // Pointcut for all public methods in controllers
     @Before("execution(public * harvestLog.controller..*.*(..))")
     public void logBefore(JoinPoint joinPoint) {
         String methodName = joinPoint.getSignature().toShortString();
-        Object[] args = joinPoint.getArgs();
-        Long farmerId = getFarmerIdFromArgs(args);
-        logger.info("Entering {} with farmerId: {} and arguments: {}",
-                methodName, farmerId != null ? farmerId : "unknown", Arrays.toString(args));
+        String simpleMethod = joinPoint.getSignature().getName();
+        Long farmerId = getFarmerIdFromArgs(joinPoint.getArgs());
+        if (SENSITIVE_METHODS.contains(simpleMethod)) {
+            logger.info("Entering {} with farmerId: {} [args redacted]",
+                    methodName, farmerId != null ? farmerId : "unknown");
+        } else {
+            logger.info("Entering {} with farmerId: {} and arguments: {}",
+                    methodName, farmerId != null ? farmerId : "unknown", Arrays.toString(joinPoint.getArgs()));
+        }
     }
     @Before("execution(@org.springframework.scheduling.annotation.Scheduled * harvestLog.service.impl.HarvestReportService.generateWeeklyReport(..))")
     public void logScheduledReportTrigger(JoinPoint joinPoint) {

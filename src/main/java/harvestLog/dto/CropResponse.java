@@ -5,6 +5,7 @@ public record CropResponse(
         String name,
         Long measureUnitId,
         Long categoryId,
+        boolean active,
 
         String categoryName,
         boolean categoryResolved,

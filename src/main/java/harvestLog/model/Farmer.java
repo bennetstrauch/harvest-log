@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,10 @@ public class Farmer {
 
     private String password;
 
+    @Column(columnDefinition = "boolean default false")
+    private boolean emailVerified = false;
+    private String verificationToken;
+    private LocalDateTime verificationTokenExpiry;
 
     @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL)
     @JsonIgnore

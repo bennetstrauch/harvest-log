@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record FieldRequest(
         @NotBlank(message = "Name is required")
-        String name
+        String name,
+        Boolean active
 ) {}
 

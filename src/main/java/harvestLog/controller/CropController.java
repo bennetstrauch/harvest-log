@@ -1,7 +1,9 @@
 package harvestLog.controller;
 
+import harvestLog.dto.BatchActiveRequest;
 import harvestLog.dto.CropRequest;
 import harvestLog.dto.CropResponse;
+import harvestLog.dto.HardDeleteRequest;
 import harvestLog.dto.HarvestSummaryResponse;
 import harvestLog.service.ICropService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,9 +27,11 @@ public class CropController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CropResponse>> getAll() {
+    public ResponseEntity<List<CropResponse>> getAll(
+            @RequestParam(required = false) Boolean active
+    ) {
         Long farmerId = getAuthenticatedFarmerId();
-        return ResponseEntity.ok(cropService.getAll(farmerId));
+        return ResponseEntity.ok(cropService.getAll(farmerId, active));
     }
 
     @GetMapping("/{id}")
@@ -65,6 +69,20 @@ public class CropController {
         Long farmerId = getAuthenticatedFarmerId();
         int deletedCount = cropService.deleteBatch(ids, farmerId);
         return deletedCount > 0 ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/batch/hard")
+    public ResponseEntity<Void> hardDeleteBatch(@RequestBody HardDeleteRequest request) {
+        Long farmerId = getAuthenticatedFarmerId();
+        cropService.hardDeleteBatch(request.ids(), farmerId, request.cascade());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/batch/active")
+    public ResponseEntity<Void> updateActiveBatch(@RequestBody BatchActiveRequest request) {
+        Long farmerId = getAuthenticatedFarmerId();
+        cropService.updateActiveBatch(request.ids(), farmerId, request.active());
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

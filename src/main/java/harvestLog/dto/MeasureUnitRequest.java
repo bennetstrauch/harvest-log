@@ -6,5 +6,6 @@ public record MeasureUnitRequest(
         @NotBlank(message = "Name is required")
         String name,
 
-        String abbreviation
+        String abbreviation,
+        Boolean active
 ) {}

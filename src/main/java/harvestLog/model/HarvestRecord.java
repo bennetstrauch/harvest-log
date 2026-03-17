@@ -28,4 +28,15 @@ public class HarvestRecord {
     @ManyToOne(fetch = FetchType.LAZY)
     Farmer farmer;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    boolean archived = false;
+
+    @Column(nullable = true)
+    String archivedCropName;
+
+    @Column(nullable = true)
+    String archivedFieldNames;
+
+    @Column(nullable = true)
+    String archivedMeasureUnitName;
 }

@@ -39,7 +39,7 @@ public class CropAiToolService {
         logger.info("Adding new crop: name='{}', measureUnitId={}, categoryId={}",
                 name, measureUnitId, categoryId);
 
-        CropRequest request = new CropRequest(name, measureUnitId, categoryId);
+        CropRequest request = new CropRequest(name, measureUnitId, categoryId, true);
         return cropService.create(request, farmerId);
     }
 
@@ -49,7 +49,7 @@ public class CropAiToolService {
         logger.info("Updating crop: id={}, name='{}', measureUnitId={}, categoryId={}",
                 id, name, measureUnitId, categoryId);
 
-        CropRequest request = new CropRequest(name, measureUnitId, categoryId);
+        CropRequest request = new CropRequest(name, measureUnitId, categoryId, null);
         return cropService.update(id, request, farmerId)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Crop not found or not owned by farmer"));

@@ -3,5 +3,6 @@ package harvestLog.dto;
 public record CropRequest(
         String name,
         Long measureUnitId,
-        Long categoryId
+        Long categoryId,
+        Boolean active
 ) {}

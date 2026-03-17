@@ -1,7 +1,10 @@
 package harvestLog.service.ai;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,9 +13,12 @@ import java.util.Objects;
 
 @Service
 public class CategoryAiService {
+
+    private static final Logger logger = LoggerFactory.getLogger(CategoryAiService.class);
+
     private final ChatClient chatClient;
 
-    public CategoryAiService(ChatClient chatClient) {
+    public CategoryAiService(@Qualifier("plainChatClient") ChatClient chatClient) {
         this.chatClient = chatClient;
     }
 
@@ -50,6 +56,8 @@ public class CategoryAiService {
 
         String prompt = sb.toString();
 
+        logger.info("Sending category suggestion request to OpenAI for crops: {}", cropNames);
+
         String aiText;
         try {
             ChatResponse response = chatClient
@@ -58,9 +66,9 @@ public class CategoryAiService {
                     .chatResponse();
 
             aiText = response.getResult().getOutput().getText();
+            logger.info("OpenAI raw response:\n{}", aiText);
         } catch (Exception ex) {
-            // logger.warn("AI batch failure: {}", ex.getMessage());
-            // On failure return an "empty" suggestion result for each item
+            logger.error("OpenAI call failed: {}", ex.getMessage(), ex);
             List<SuggestionResult> fallback = new ArrayList<>();
             for (int i = 0; i < cropNames.size(); i++) fallback.add(SuggestionResult.empty());
             return fallback;

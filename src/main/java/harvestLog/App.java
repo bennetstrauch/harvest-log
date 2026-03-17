@@ -7,9 +7,12 @@ import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import io.github.cdimascio.dotenv.Dotenv;
 
 
 @EnableAspectJAutoProxy
@@ -19,6 +22,17 @@ public class App {
 
 
     public static void main(String[] args) {
+         Dotenv dotenv = Dotenv.load();
+
+        System.setProperty("DB_URL", dotenv.get("DB_URL"));
+        System.setProperty("DB_USERNAME", dotenv.get("DB_USERNAME"));
+        System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
+        System.setProperty("OPENAI_API_KEY", dotenv.get("OPENAI_API_KEY"));
+         System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
+        System.setProperty("OPENAI_API_KEY", dotenv.get("OPENAI_API_KEY"));
+        System.setProperty("MAIL_USER", dotenv.get("MAIL_USER"));
+        System.setProperty("MAIL_PASS", dotenv.get("MAIL_PASS"));
+
         SpringApplication.run(App.class, args);
     }
 
@@ -43,14 +57,19 @@ public class App {
     };
 
     @Bean
+    @Qualifier("chatClient")
     public ChatClient chatClient(ChatModel chatModel) {
-//change to db for production #
         Advisor memory = new MessageChatMemoryAdvisor(new InMemoryChatMemory());
-
         return ChatClient.builder(chatModel)
                 .defaultAdvisors(memory)
                 .defaultSystem(systemPrompts[1])
                 .build();
+    }
+
+    @Bean
+    @Qualifier("plainChatClient")
+    public ChatClient plainChatClient(ChatModel chatModel) {
+        return ChatClient.builder(chatModel).build();
     }
 
 //    @Bean

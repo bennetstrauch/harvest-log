@@ -1,12 +1,12 @@
 package harvestLog.controller;
 
+import harvestLog.dto.BatchActiveRequest;
 import harvestLog.dto.CategoryRequest;
 import harvestLog.dto.CategoryResponse;
-import harvestLog.model.Farmer;
+import harvestLog.dto.HardDeleteRequest;
 import harvestLog.service.ICategoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,9 +24,11 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryResponse>> getAllCategories() {
+    public ResponseEntity<List<CategoryResponse>> getAllCategories(
+            @RequestParam(required = false) Boolean active
+    ) {
         Long farmerId = getAuthenticatedFarmerId();
-        return ResponseEntity.ok(categoryService.getAll(farmerId));
+        return ResponseEntity.ok(categoryService.getAllForFarmerId(farmerId, active));
     }
 
     @GetMapping("/{id}")
@@ -45,10 +47,10 @@ public class CategoryController {
     }
 
     @PostMapping("/batch")
-    public List<CategoryResponse> createCategories(
-            @RequestBody List<CategoryRequest> categoryRequests) {
+    public ResponseEntity<List<CategoryResponse>> createBatch(@Valid @RequestBody List<CategoryRequest> requests) {
         Long farmerId = getAuthenticatedFarmerId();
-        return categoryService.createBatch(categoryRequests, farmerId);
+        List<CategoryResponse> created = categoryService.createBatch(requests, farmerId);
+        return ResponseEntity.status(201).body(created);
     }
 
 
@@ -67,5 +69,26 @@ public class CategoryController {
         Long farmerId = getAuthenticatedFarmerId();
         boolean deleted = categoryService.delete(id, farmerId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/batch")
+    public ResponseEntity<Void> deleteBatch(@RequestBody List<Long> ids) {
+        Long farmerId = getAuthenticatedFarmerId();
+        int deletedCount = categoryService.deleteBatch(ids, farmerId);
+        return deletedCount > 0 ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/batch/hard")
+    public ResponseEntity<Void> hardDeleteBatch(@RequestBody HardDeleteRequest request) {
+        Long farmerId = getAuthenticatedFarmerId();
+        categoryService.hardDeleteBatch(request.ids(), farmerId, request.cascade());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/batch/active")
+    public ResponseEntity<Void> updateActiveBatch(@RequestBody BatchActiveRequest request) {
+        Long farmerId = getAuthenticatedFarmerId();
+        categoryService.updateActiveBatch(request.ids(), farmerId, request.active());
+        return ResponseEntity.noContent().build();
     }
 }

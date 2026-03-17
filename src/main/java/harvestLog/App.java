@@ -22,16 +22,13 @@ public class App {
 
 
     public static void main(String[] args) {
-         Dotenv dotenv = Dotenv.load();
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
-        System.setProperty("DB_URL", dotenv.get("DB_URL"));
-        System.setProperty("DB_USERNAME", dotenv.get("DB_USERNAME"));
-        System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
-        System.setProperty("OPENAI_API_KEY", dotenv.get("OPENAI_API_KEY"));
-         System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
-        System.setProperty("OPENAI_API_KEY", dotenv.get("OPENAI_API_KEY"));
-        System.setProperty("MAIL_USER", dotenv.get("MAIL_USER"));
-        System.setProperty("MAIL_PASS", dotenv.get("MAIL_PASS"));
+        String[] keys = {"DB_URL", "DB_USERNAME", "DB_PASSWORD", "OPENAI_API_KEY", "MAIL_USER", "MAIL_PASS"};
+        for (String key : keys) {
+            String value = dotenv.get(key);
+            if (value != null) System.setProperty(key, value);
+        }
 
         SpringApplication.run(App.class, args);
     }

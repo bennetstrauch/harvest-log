@@ -3,6 +3,7 @@ package harvestLog.advice;
 import harvestLog.dto.DependencyConflictResponse;
 import harvestLog.dto.ErrorResponse;
 import harvestLog.exception.DependencyConflictException;
+import harvestLog.exception.PlanLimitExceededException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,13 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(PlanLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handlePlanLimit(PlanLimitExceededException ex) {
+        log.warn("Plan limit exceeded: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of(ex.getMessage(), "PLAN_LIMIT_EXCEEDED"));
+    }
 
     @ExceptionHandler(DependencyConflictException.class)
     public ResponseEntity<DependencyConflictResponse> handleDependencyConflict(DependencyConflictException ex) {

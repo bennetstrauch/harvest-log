@@ -14,6 +14,7 @@ public interface IFarmerService {
     void deleteMyAccount(String email);
 
     Farmer findByEmail(String email);
+    Farmer findById(Long id);
     Farmer create(Farmer farmer);
     Farmer update(Long id, Farmer farmer);
 

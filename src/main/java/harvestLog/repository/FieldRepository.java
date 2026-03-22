@@ -14,6 +14,8 @@ public interface FieldRepository extends JpaRepository<Field, Long> {
     // Active filtering
     List<Field> findByFarmerIdAndActive(Long farmerId, boolean active);
 
+    long countByFarmerIdAndActiveTrue(Long farmerId);
+
     Optional<Field> findByNameIgnoreCaseAndFarmerId(String name, Long farmerId);
 
     // Soft deletion

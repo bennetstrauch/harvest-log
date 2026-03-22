@@ -6,6 +6,8 @@ import harvestLog.dto.DependencyConflictResponse;
 import harvestLog.exception.AlreadyExistsException;
 import harvestLog.exception.DependencyConflictException;
 import harvestLog.model.Crop;
+import harvestLog.plan.PlanLimits;
+import harvestLog.service.PlanService;
 import harvestLog.model.Farmer;
 import harvestLog.model.Category;
 import harvestLog.model.HarvestRecord;
@@ -44,6 +46,7 @@ public class CropService implements ICropService {
     private final CategoryRepository categoryRepo;
     private final CategoryAiService categoryAiService;
     private final HarvestRecordRepository harvestRecordRepo;
+    private final PlanService planService;
 
     public CropService(
             CropRepository cropRepo,
@@ -52,7 +55,8 @@ public class CropService implements ICropService {
             MeasureUnitRepository measureUnitRepo,
             CategoryRepository categoryRepo,
             CategoryAiService categoryAiService,
-            HarvestRecordRepository harvestRecordRepo
+            HarvestRecordRepository harvestRecordRepo,
+            PlanService planService
     ) {
         this.cropRepo = cropRepo;
         this.farmerRepo = farmerRepo;
@@ -61,6 +65,7 @@ public class CropService implements ICropService {
         this.categoryRepo = categoryRepo;
         this.categoryAiService = categoryAiService;
         this.harvestRecordRepo = harvestRecordRepo;
+        this.planService = planService;
     }
 
     @Override
@@ -103,6 +108,9 @@ public class CropService implements ICropService {
     @Transactional
     public CropResponse create(CropRequest request, Long farmerId) {
         System.out.println("Creating crop: " + request.name() + " for farmer: " + farmerId);
+        Farmer farmer = farmerRepo.findById(farmerId)
+                .orElseThrow(() -> new IllegalArgumentException("Farmer not found: " + farmerId));
+        planService.enforceLimit(farmer, cropRepo.countByFarmerIdAndActiveTrue(farmerId), 1, PlanLimits.FREE_MAX_CROPS, "crops");
         try {
             Crop crop = toEntity(request, farmerId);
             Crop saved = cropRepo.save(crop);
@@ -171,6 +179,9 @@ public class CropService implements ICropService {
     @Override
     @Transactional
     public List<CropResponse> createBatch(List<CropRequest> requests, Long farmerId) {
+        Farmer farmer = farmerRepo.findById(farmerId)
+                .orElseThrow(() -> new IllegalArgumentException("Farmer not found: " + farmerId));
+        planService.enforceLimit(farmer, cropRepo.countByFarmerIdAndActiveTrue(farmerId), requests.size(), PlanLimits.FREE_MAX_CROPS, "crops");
         // load categories once for performance
         List<Category> existingCats = categoryRepo.findByFarmerId(farmerId, Sort.by("name"));
         Map<Long, Category> categoriesById = existingCats.stream()

@@ -5,6 +5,8 @@ import harvestLog.dto.MeasureUnitRequest;
 import harvestLog.dto.MeasureUnitResponse;
 import harvestLog.exception.AlreadyExistsException;
 import harvestLog.exception.DependencyConflictException;
+import harvestLog.plan.PlanLimits;
+import harvestLog.service.PlanService;
 import harvestLog.model.Crop;
 import harvestLog.model.Farmer;
 import harvestLog.model.HarvestRecord;
@@ -31,13 +33,16 @@ public class MeasureUnitService implements IMeasureUnitService {
     private final FarmerRepository farmerRepository;
     private final CropRepository cropRepository;
     private final HarvestRecordRepository harvestRecordRepository;
+    private final PlanService planService;
 
     public MeasureUnitService(MeasureUnitRepository repository, FarmerRepository farmerRepository,
-                              CropRepository cropRepository, HarvestRecordRepository harvestRecordRepository) {
+                              CropRepository cropRepository, HarvestRecordRepository harvestRecordRepository,
+                              PlanService planService) {
         this.repository = repository;
         this.farmerRepository = farmerRepository;
         this.cropRepository = cropRepository;
         this.harvestRecordRepository = harvestRecordRepository;
+        this.planService = planService;
     }
 
     @Override
@@ -79,6 +84,9 @@ public class MeasureUnitService implements IMeasureUnitService {
     @Override
     @Transactional
     public MeasureUnitResponse create(MeasureUnitRequest request, Long farmerId) {
+        Farmer farmer = farmerRepository.findById(farmerId)
+                .orElseThrow(() -> new IllegalArgumentException("Farmer not found: " + farmerId));
+        planService.enforceLimit(farmer, repository.countByFarmerIdAndActiveTrue(farmerId), 1, PlanLimits.FREE_MAX_MEASURE_UNITS, "measure units");
         try {
             MeasureUnit unit = toEntity(request, farmerId);
             MeasureUnit saved = repository.save(unit);
@@ -108,6 +116,7 @@ public class MeasureUnitService implements IMeasureUnitService {
     public List<MeasureUnitResponse> createBatch(List<MeasureUnitRequest> requests, Long farmerId) {
         Farmer farmer = farmerRepository.findById(farmerId)
                 .orElseThrow(() -> new IllegalArgumentException("Farmer not found: " + farmerId));
+        planService.enforceLimit(farmer, repository.countByFarmerIdAndActiveTrue(farmerId), requests.size(), PlanLimits.FREE_MAX_MEASURE_UNITS, "measure units");
 
         List<MeasureUnit> units = requests.stream()
                 .map(request -> {

@@ -62,6 +62,12 @@ public class FarmerService implements IFarmerService, UserDetailsService {
     }
 
     @Override
+    public Farmer findById(Long id) {
+        return farmerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Farmer not found with id: " + id));
+    }
+
+    @Override
     public Farmer create(Farmer farmer) {
         //farmer.setId(null);
         return farmerRepository.save(farmer);

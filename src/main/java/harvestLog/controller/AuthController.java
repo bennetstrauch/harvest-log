@@ -52,6 +52,7 @@ public class AuthController {
         farmer.setEmailVerified(false);
         farmer.setVerificationToken(token);
         farmer.setVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
+        farmer.setTrialEndsAt(LocalDateTime.now().plusDays(90));
 
         Farmer savedFarmer = farmerService.create(farmer);
         try {

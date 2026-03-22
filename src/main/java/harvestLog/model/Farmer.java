@@ -29,6 +29,12 @@ public class Farmer {
     private String verificationToken;
     private LocalDateTime verificationTokenExpiry;
 
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "varchar(20) default 'FREE'")
+    private PlanType planType = PlanType.FREE;
+
+    private LocalDateTime trialEndsAt;
+
     @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<HarvestRecord> harvestRecords = new ArrayList<>();

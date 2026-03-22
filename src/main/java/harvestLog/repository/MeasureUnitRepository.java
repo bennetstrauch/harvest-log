@@ -17,6 +17,8 @@ public interface MeasureUnitRepository extends JpaRepository<MeasureUnit, Long> 
     // Active filtering
     List<MeasureUnit> findByFarmerIdAndActive(Long farmerId, boolean active);
 
+    long countByFarmerIdAndActiveTrue(Long farmerId);
+
     // For duplicate checking (includes inactive)
     Optional<MeasureUnit> findByNameIgnoreCaseAndFarmerId(String name, Long farmerId);
 

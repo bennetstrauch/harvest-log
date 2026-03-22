@@ -5,6 +5,8 @@ import harvestLog.dto.FieldRequest;
 import harvestLog.dto.FieldResponse;
 import harvestLog.exception.AlreadyExistsException;
 import harvestLog.exception.DependencyConflictException;
+import harvestLog.plan.PlanLimits;
+import harvestLog.service.PlanService;
 import harvestLog.model.Farmer;
 import harvestLog.model.Field;
 import harvestLog.model.HarvestRecord;
@@ -29,11 +31,14 @@ public class FieldService implements IFieldService {
     private final FieldRepository fieldRepo;
     private final FarmerRepository farmerRepo;
     private final HarvestRecordRepository harvestRecordRepo;
+    private final PlanService planService;
 
-    public FieldService(FieldRepository fieldRepo, FarmerRepository farmerRepo, HarvestRecordRepository harvestRecordRepo) {
+    public FieldService(FieldRepository fieldRepo, FarmerRepository farmerRepo,
+                        HarvestRecordRepository harvestRecordRepo, PlanService planService) {
         this.fieldRepo = fieldRepo;
         this.farmerRepo = farmerRepo;
         this.harvestRecordRepo = harvestRecordRepo;
+        this.planService = planService;
     }
 
     public List<FieldResponse> getAllForFarmer(Long farmerId) {
@@ -73,6 +78,9 @@ public class FieldService implements IFieldService {
 
     @Transactional
     public FieldResponse create(FieldRequest request, Long farmerId) {
+        Farmer farmer = farmerRepo.findById(farmerId)
+                .orElseThrow(() -> new IllegalArgumentException("Farmer not found: " + farmerId));
+        planService.enforceLimit(farmer, fieldRepo.countByFarmerIdAndActiveTrue(farmerId), 1, PlanLimits.FREE_MAX_FIELDS, "fields");
         try {
             Field field = toEntity(request, farmerId);
             Field saved = fieldRepo.save(field);
@@ -118,6 +126,7 @@ public class FieldService implements IFieldService {
     public List<FieldResponse> createBatch(List<FieldRequest> requests, Long farmerId) {
         Farmer farmer = farmerRepo.findById(farmerId)
                 .orElseThrow(() -> new IllegalArgumentException("Farmer not found: " + farmerId));
+        planService.enforceLimit(farmer, fieldRepo.countByFarmerIdAndActiveTrue(farmerId), requests.size(), PlanLimits.FREE_MAX_FIELDS, "fields");
 
         List<Field> fields = requests.stream()
                 .map(request -> {

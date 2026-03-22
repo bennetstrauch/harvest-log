@@ -29,6 +29,8 @@ public interface CropRepository extends JpaRepository<Crop, Long> {
     // Active filtering
     List<Crop> findByFarmerIdAndActive(Long farmerId, boolean active);
 
+    long countByFarmerIdAndActiveTrue(Long farmerId);
+
     // Soft deletion
     @Modifying
     @Query("UPDATE Crop c SET c.active = false WHERE c.id IN :ids AND c.farmer.id = :farmerId")

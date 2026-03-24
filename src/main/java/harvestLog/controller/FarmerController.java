@@ -3,6 +3,7 @@ package harvestLog.controller;
 import harvestLog.dto.FarmerBasicResponse;
 import harvestLog.dto.FarmerRequest;
 import harvestLog.dto.FarmerDetailResponse;
+import harvestLog.dto.UpdateProfileRequest;
 import harvestLog.model.Farmer;
 import harvestLog.service.IFarmerService;
 import jakarta.validation.Valid;
@@ -29,6 +30,11 @@ public class FarmerController {
     @PutMapping("/me")
     public FarmerDetailResponse updateMyProfile(Authentication auth, @Valid @RequestBody FarmerRequest requestDTO) {
         return farmerService.updateMyProfile(auth.getName(), requestDTO);
+    }
+
+    @PatchMapping("/me")
+    public FarmerBasicResponse updateMyName(Authentication auth, @Valid @RequestBody UpdateProfileRequest request) {
+        return farmerService.updateMyName(auth.getName(), request.name());
     }
 
     // Delete farmer

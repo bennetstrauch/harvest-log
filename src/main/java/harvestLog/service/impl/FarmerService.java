@@ -68,6 +68,25 @@ public class FarmerService implements IFarmerService, UserDetailsService {
     }
 
     @Override
+    public FarmerBasicResponse updatePlan(String targetEmail, harvestLog.model.PlanType planType) {
+        Farmer farmer = findByEmail(targetEmail);
+        farmer.setPlanType(planType);
+        if (planType == harvestLog.model.PlanType.FARM) {
+            farmer.setTrialEndsAt(null);
+        }
+        Farmer saved = farmerRepository.save(farmer);
+        return new FarmerBasicResponse(saved.getId(), saved.getName(), saved.getEmail());
+    }
+
+    @Override
+    public FarmerBasicResponse updateMyName(String email, String name) {
+        Farmer farmer = findByEmail(email);
+        farmer.setName(name);
+        Farmer saved = farmerRepository.save(farmer);
+        return new FarmerBasicResponse(saved.getId(), saved.getName(), saved.getEmail());
+    }
+
+    @Override
     public Farmer create(Farmer farmer) {
         //farmer.setId(null);
         return farmerRepository.save(farmer);

@@ -15,6 +15,8 @@ public interface IFarmerService {
 
     Farmer findByEmail(String email);
     Farmer findById(Long id);
+    harvestLog.dto.FarmerBasicResponse updateMyName(String email, String name);
+    harvestLog.dto.FarmerBasicResponse updatePlan(String targetEmail, harvestLog.model.PlanType planType);
     Farmer create(Farmer farmer);
     Farmer update(Long id, Farmer farmer);
 

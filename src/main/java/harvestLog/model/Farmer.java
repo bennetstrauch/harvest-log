@@ -30,7 +30,6 @@ public class Farmer {
     private LocalDateTime verificationTokenExpiry;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "varchar(20) default 'FREE'")
     private PlanType planType = PlanType.FREE;
 
     private LocalDateTime trialEndsAt;

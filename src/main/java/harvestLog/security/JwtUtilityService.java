@@ -46,7 +46,7 @@ public class JwtUtilityService {
                 .claim(ROLE_CLAIM,FARMER_ROLE)
                 .claim("farmerId", farmerId)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000))//24 hours
+                .expiration(new Date(System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000))//30 days
                 .signWith(key)
                 .compact();
     }

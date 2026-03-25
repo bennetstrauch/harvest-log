@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -18,6 +19,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 @EnableAspectJAutoProxy
 @SpringBootApplication
 @EnableScheduling
+@EnableAsync
 public class App {
 
 

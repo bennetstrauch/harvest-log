@@ -14,6 +14,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import harvestLog.repository.CropRepository;
+import harvestLog.repository.FieldRepository;
+import harvestLog.repository.MeasureUnitRepository;
+import harvestLog.plan.PlanLimits;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +26,12 @@ import java.util.stream.Collectors;
 public class FarmerService implements IFarmerService, UserDetailsService {
     @Autowired
     private FarmerRepository farmerRepository;
+    @Autowired
+    private CropRepository cropRepository;
+    @Autowired
+    private FieldRepository fieldRepository;
+    @Autowired
+    private MeasureUnitRepository measureUnitRepository;
 
     @Override
     public List<FarmerBasicResponse> getAllFarmers() {
@@ -73,6 +84,15 @@ public class FarmerService implements IFarmerService, UserDetailsService {
         farmer.setPlanType(planType);
         if (planType == harvestLog.model.PlanType.FARM) {
             farmer.setTrialEndsAt(null);
+            farmer.setGracePeriodStartedAt(null);
+        } else if (planType == harvestLog.model.PlanType.FREE) {
+            Long farmerId = farmer.getId();
+            boolean hasOverage = cropRepository.countByFarmerIdAndActiveTrue(farmerId) > PlanLimits.FREE_MAX_CROPS
+                    || fieldRepository.countByFarmerIdAndActiveTrue(farmerId) > PlanLimits.FREE_MAX_FIELDS
+                    || measureUnitRepository.countByFarmerIdAndActiveTrue(farmerId) > PlanLimits.FREE_MAX_MEASURE_UNITS;
+            if (hasOverage && farmer.getGracePeriodStartedAt() == null) {
+                farmer.setGracePeriodStartedAt(LocalDateTime.now());
+            }
         }
         Farmer saved = farmerRepository.save(farmer);
         return new FarmerBasicResponse(saved.getId(), saved.getName(), saved.getEmail());

@@ -34,6 +34,8 @@ public class Farmer {
 
     private LocalDateTime trialEndsAt;
 
+    private LocalDateTime gracePeriodStartedAt;
+
     @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<HarvestRecord> harvestRecords = new ArrayList<>();

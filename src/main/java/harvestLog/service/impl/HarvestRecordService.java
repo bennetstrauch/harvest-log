@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -153,6 +154,42 @@ public class HarvestRecordService {
         record.setHarvestedQuantity(request.harvestedQuantity());
     }
 
+    /**
+     * Archives all harvest records that reference the given crops, preserving crop name,
+     * measure unit name, and category name before nulling out the crop reference.
+     * Called by CropService, MeasureUnitService, and CategoryService on hard delete cascade.
+     */
+    @Transactional
+    public void archiveCropRecords(List<Crop> crops, Long farmerId) {
+        List<Long> cropIds = crops.stream().map(Crop::getId).collect(Collectors.toList());
+        Map<Long, String> nameMap = crops.stream()
+                .collect(Collectors.toMap(Crop::getId, Crop::getName));
+        Map<Long, String> muMap = crops.stream()
+                .filter(c -> c.getMeasureUnit() != null)
+                .collect(Collectors.toMap(Crop::getId, c -> {
+                    var mu = c.getMeasureUnit();
+                    return (mu.getAbbreviation() != null && !mu.getAbbreviation().isBlank())
+                            ? mu.getAbbreviation() : mu.getName();
+                }));
+        Map<Long, String> catMap = crops.stream()
+                .filter(c -> c.getCategory() != null)
+                .collect(Collectors.toMap(Crop::getId, c -> c.getCategory().getName()));
+
+        List<HarvestRecord> affected = recordRepo.findByFarmerIdAndCrop_IdIn(farmerId, cropIds);
+        for (HarvestRecord record : affected) {
+            if (record.getCrop() != null) {
+                Long cropId = record.getCrop().getId();
+                record.setArchivedCropName(nameMap.getOrDefault(cropId, record.getCrop().getName()));
+                record.setArchivedMeasureUnitName(muMap.get(cropId));
+                record.setArchivedCategoryName(catMap.get(cropId));
+                record.setCrop(null);
+                record.setArchived(true);
+            }
+        }
+        recordRepo.saveAll(affected);
+        recordRepo.flush();
+    }
+
     private HarvestRecordResponse toResponse(HarvestRecord record) {
         return new HarvestRecordResponse(
                 record.getId(),
@@ -164,7 +201,8 @@ public class HarvestRecordService {
                 record.isArchived(),
                 record.getArchivedCropName(),
                 record.getArchivedFieldNames(),
-                record.getArchivedMeasureUnitName()
+                record.getArchivedMeasureUnitName(),
+                record.getArchivedCategoryName()
         );
     }
 }

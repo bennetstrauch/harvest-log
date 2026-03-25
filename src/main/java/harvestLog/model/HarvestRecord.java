@@ -39,4 +39,7 @@ public class HarvestRecord {
 
     @Column(nullable = true)
     String archivedMeasureUnitName;
+
+    @Column(nullable = true)
+    String archivedCategoryName;
 }

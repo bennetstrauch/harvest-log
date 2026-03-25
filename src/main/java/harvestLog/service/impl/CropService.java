@@ -10,7 +10,6 @@ import harvestLog.plan.PlanLimits;
 import harvestLog.service.PlanService;
 import harvestLog.model.Farmer;
 import harvestLog.model.Category;
-import harvestLog.model.HarvestRecord;
 import harvestLog.model.MeasureUnit;
 import harvestLog.repository.CategoryRepository;
 import harvestLog.repository.CropRepository;
@@ -46,6 +45,7 @@ public class CropService implements ICropService {
     private final CategoryRepository categoryRepo;
     private final CategoryAiService categoryAiService;
     private final HarvestRecordRepository harvestRecordRepo;
+    private final HarvestRecordService harvestRecordService;
     private final PlanService planService;
 
     public CropService(
@@ -56,6 +56,7 @@ public class CropService implements ICropService {
             CategoryRepository categoryRepo,
             CategoryAiService categoryAiService,
             HarvestRecordRepository harvestRecordRepo,
+            HarvestRecordService harvestRecordService,
             PlanService planService
     ) {
         this.cropRepo = cropRepo;
@@ -65,6 +66,7 @@ public class CropService implements ICropService {
         this.categoryRepo = categoryRepo;
         this.categoryAiService = categoryAiService;
         this.harvestRecordRepo = harvestRecordRepo;
+        this.harvestRecordService = harvestRecordService;
         this.planService = planService;
     }
 
@@ -396,27 +398,7 @@ public class CropService implements ICropService {
         }
 
         if (cascade && affectedCount > 0) {
-            Map<Long, String> cropNameMap = crops.stream()
-                    .collect(Collectors.toMap(Crop::getId, Crop::getName));
-            Map<Long, String> cropMuMap = crops.stream()
-                    .filter(c -> c.getMeasureUnit() != null)
-                    .collect(Collectors.toMap(Crop::getId, c -> {
-                        var mu = c.getMeasureUnit();
-                        return (mu.getAbbreviation() != null && !mu.getAbbreviation().isBlank())
-                                ? mu.getAbbreviation() : mu.getName();
-                    }));
-            List<HarvestRecord> affected = harvestRecordRepo.findByFarmerIdAndCrop_IdIn(farmerId, validIds);
-            for (HarvestRecord record : affected) {
-                if (record.getCrop() != null) {
-                    Long cropId = record.getCrop().getId();
-                    record.setArchivedCropName(cropNameMap.getOrDefault(cropId, record.getCrop().getName()));
-                    record.setArchivedMeasureUnitName(cropMuMap.get(cropId));
-                    record.setCrop(null);
-                    record.setArchived(true);
-                }
-            }
-            harvestRecordRepo.saveAll(affected);
-            harvestRecordRepo.flush();
+            harvestRecordService.archiveCropRecords(crops, farmerId);
         }
 
         cropRepo.deleteByIdInAndFarmerId(validIds, farmerId);

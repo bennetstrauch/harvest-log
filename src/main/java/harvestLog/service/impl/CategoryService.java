@@ -8,7 +8,6 @@ import harvestLog.exception.DependencyConflictException;
 import harvestLog.model.Category;
 import harvestLog.model.Crop;
 import harvestLog.model.Farmer;
-import harvestLog.model.HarvestRecord;
 import harvestLog.repository.CategoryRepository;
 import harvestLog.repository.CropRepository;
 import harvestLog.repository.FarmerRepository;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,13 +29,16 @@ public class CategoryService implements ICategoryService {
     private final FarmerRepository farmerRepository;
     private final CropRepository cropRepository;
     private final HarvestRecordRepository harvestRecordRepository;
+    private final HarvestRecordService harvestRecordService;
 
     public CategoryService(CategoryRepository repository, FarmerRepository farmerRepository,
-                           CropRepository cropRepository, HarvestRecordRepository harvestRecordRepository) {
+                           CropRepository cropRepository, HarvestRecordRepository harvestRecordRepository,
+                           HarvestRecordService harvestRecordService) {
         this.repository = repository;
         this.farmerRepository = farmerRepository;
         this.cropRepository = cropRepository;
         this.harvestRecordRepository = harvestRecordRepository;
+        this.harvestRecordService = harvestRecordService;
     }
 
     @Override
@@ -158,45 +159,22 @@ public class CategoryService implements ICategoryService {
 
         List<Crop> affectedCrops = cropRepository.findByCategory_IdInAndFarmerId(ids, farmerId);
 
-        if (!affectedCrops.isEmpty() && !cascade) {
-            List<Long> cropIds = affectedCrops.stream().map(Crop::getId).collect(Collectors.toList());
-            int hrCount = harvestRecordRepository.countByFarmerIdAndCrop_IdIn(farmerId, cropIds);
-            List<DependencyConflictResponse.EntitySummary> cropSummaries = affectedCrops.stream()
-                    .map(c -> new DependencyConflictResponse.EntitySummary(c.getId(), c.getName()))
-                    .collect(Collectors.toList());
-            throw new DependencyConflictException(new DependencyConflictResponse(
-                    "This category is used by crops which may have harvest records",
-                    "DEPENDENCY_CONFLICT",
-                    cropSummaries,
-                    hrCount,
-                    LocalDateTime.now()
-            ));
-        }
-
         if (!affectedCrops.isEmpty()) {
             List<Long> cropIds = affectedCrops.stream().map(Crop::getId).collect(Collectors.toList());
-            // Archive harvest records for these crops
-            Map<Long, String> cropNameMap = affectedCrops.stream()
-                    .collect(Collectors.toMap(Crop::getId, Crop::getName));
-            Map<Long, String> cropMuMap = affectedCrops.stream()
-                    .filter(c -> c.getMeasureUnit() != null)
-                    .collect(Collectors.toMap(Crop::getId, c -> {
-                        var mu = c.getMeasureUnit();
-                        return (mu.getAbbreviation() != null && !mu.getAbbreviation().isBlank())
-                                ? mu.getAbbreviation() : mu.getName();
-                    }));
-            List<HarvestRecord> affected = harvestRecordRepository.findByFarmerIdAndCrop_IdIn(farmerId, cropIds);
-            for (HarvestRecord record : affected) {
-                if (record.getCrop() != null) {
-                    Long cropId = record.getCrop().getId();
-                    record.setArchivedCropName(cropNameMap.getOrDefault(cropId, record.getCrop().getName()));
-                    record.setArchivedMeasureUnitName(cropMuMap.get(cropId));
-                    record.setCrop(null);
-                    record.setArchived(true);
-                }
+            if (!cascade) {
+                int hrCount = harvestRecordRepository.countByFarmerIdAndCrop_IdIn(farmerId, cropIds);
+                List<DependencyConflictResponse.EntitySummary> cropSummaries = affectedCrops.stream()
+                        .map(c -> new DependencyConflictResponse.EntitySummary(c.getId(), c.getName()))
+                        .collect(Collectors.toList());
+                throw new DependencyConflictException(new DependencyConflictResponse(
+                        "This category is used by crops which may have harvest records",
+                        "DEPENDENCY_CONFLICT",
+                        cropSummaries,
+                        hrCount,
+                        LocalDateTime.now()
+                ));
             }
-            harvestRecordRepository.saveAll(affected);
-            harvestRecordRepository.flush();
+            harvestRecordService.archiveCropRecords(affectedCrops, farmerId);
             cropRepository.deleteByIdInAndFarmerId(cropIds, farmerId);
         }
 

@@ -13,5 +13,6 @@ public record HarvestRecordResponse(
         boolean archived,
         String archivedCropName,
         String archivedFieldNames,
-        String archivedMeasureUnitName
+        String archivedMeasureUnitName,
+        String archivedCategoryName
 ) {}

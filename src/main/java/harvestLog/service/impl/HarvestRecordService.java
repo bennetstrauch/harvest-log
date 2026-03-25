@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +128,7 @@ public class HarvestRecordService {
 
         HarvestRecord record = new HarvestRecord();
         record.setDate(request.date());
+        record.setCreatedAt(LocalDateTime.now());
         record.setCrop(crop);
         record.setFields(fields);
         record.setHarvestedQuantity(request.harvestedQuantity());
@@ -194,6 +196,7 @@ public class HarvestRecordService {
         return new HarvestRecordResponse(
                 record.getId(),
                 record.getDate(),
+                record.getCreatedAt(),
                 record.getCrop() != null ? record.getCrop().getId() : null,
                 record.getFields().stream().map(Field::getId).collect(Collectors.toList()),
                 record.getHarvestedQuantity(),

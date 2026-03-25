@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -18,6 +19,7 @@ public class HarvestRecord {
     Long id;
 
     LocalDate date;
+    LocalDateTime createdAt;
     @ManyToOne
     Crop crop;
 

@@ -42,18 +42,14 @@ public class App {
 //        };
 //    }
 
-    String[] systemPrompts = new String[] {
-            "You are an assistant for a farm management system. \" +\n" +
-                    "                        \"You help users manage crops, fields, and harvest entries. \" +\n" +
-                    "                        \"Assist them in adding or querying information. \" +\n" +
-                    "                        \"Be precise and always confirm actions.",
+    static final String SYSTEM_PROMPT =
             "You are an assistant for a farm management system. " +
-                    "You help users (farmers) manage crops, fields, and harvest entries. " +
-                    "When a user requests to fetch or retrieve harvest records without filters, use the `getAllHarvestRecords` tool directly. " +
-                    "When a user requests harvest records with specific filters (e.g., field IDs, crop IDs, or dates), use the `getFiltered` tool directly. " +
-                    "For actions like creating, updating, or deleting records, confirm with the user before proceeding. " +
-                    "Be precise in your responses."
-    };
+            "Today's date is {currentDate}. " +
+            "You help users (farmers) manage crops, fields, and harvest entries. " +
+            "When a user requests to fetch or retrieve harvest records without filters, use the `getAllHarvestRecords` tool directly. " +
+            "When a user requests harvest records with specific filters (e.g., field IDs, crop IDs, or dates), use the `getFiltered` tool directly. " +
+            "For actions like creating, updating, or deleting records, confirm with the user before proceeding. " +
+            "Be precise in your responses.";
 
     @Bean
     @Qualifier("chatClient")
@@ -61,7 +57,7 @@ public class App {
         Advisor memory = new MessageChatMemoryAdvisor(new InMemoryChatMemory());
         return ChatClient.builder(chatModel)
                 .defaultAdvisors(memory)
-                .defaultSystem(systemPrompts[1])
+                .defaultSystem(SYSTEM_PROMPT)
                 .build();
     }
 

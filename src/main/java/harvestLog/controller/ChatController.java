@@ -20,6 +20,7 @@
     import org.springframework.web.bind.annotation.RequestParam;
     import org.springframework.web.bind.annotation.RestController;
 
+    import java.time.LocalDate;
     import java.util.List;
 
     import static harvestLog.security.FarmerIdExtractor.getAuthenticatedFarmerId;
@@ -71,7 +72,9 @@
             }
 
             ChatResponse response = chatClient
-                    .prompt(prompt)
+                    .prompt()
+                    .system(s -> s.param("currentDate", LocalDate.now().toString()))
+                    .user(prompt)
                     .tools(harvestRecordAiToolService, cropAiToolService, fieldAiToolService, categoryAiToolService, measureUnitAiToolService)
                     .advisors(a -> a.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId))
                     .call()

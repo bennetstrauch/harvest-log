@@ -314,7 +314,7 @@ public class CropService implements ICropService {
 
                     // Only update fields that are provided (not null)
                     if (request.name() != null) {
-                        c.setName(request.name());
+                        c.setName(capitalizeName(request.name()));
                         System.out.println("Updated name to: " + request.name());
                     }
 
@@ -411,6 +411,13 @@ public class CropService implements ICropService {
         cropRepo.updateActiveStatusByIdInAndFarmerId(ids, active, farmerId);
     }
 
+    // ===== Helpers =====
+
+    private String capitalizeName(String name) {
+        if (name == null || name.isEmpty()) return name;
+        return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
+
     // ===== Mapping helpers =====
 
     private Crop toEntity(CropRequest request, Long farmerId) {
@@ -431,7 +438,7 @@ public class CropService implements ICropService {
                 .orElseThrow(() -> new IllegalArgumentException("Farmer not found: " + farmerId));
 
         Crop crop = new Crop();
-        crop.setName(request.name());
+        crop.setName(capitalizeName(request.name()));
         crop.setFarmer(farmer);
 
         // Set active status (default to true if not specified)

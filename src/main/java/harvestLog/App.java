@@ -26,7 +26,7 @@ public class App {
     public static void main(String[] args) {
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
-        String[] keys = {"DB_URL", "DB_USERNAME", "DB_PASSWORD", "OPENAI_API_KEY", "MAIL_USER", "MAIL_PASS"};
+        String[] keys = {"DB_URL", "DB_USERNAME", "DB_PASSWORD", "OPENAI_API_KEY", "MAIL_USER", "MAIL_PASS", "RESEND_API_KEY", "MAIL_FROM", "FRONTEND_URL"};
         for (String key : keys) {
             String value = dotenv.get(key);
             if (value != null) System.setProperty(key, value);
@@ -43,13 +43,11 @@ public class App {
 //    }
 
     static final String SYSTEM_PROMPT =
-            "You are an assistant for a farm management system. " +
-            "Today's date is {currentDate}. " +
-            "You help users (farmers) manage crops, fields, and harvest entries. " +
-            "When a user requests to fetch or retrieve harvest records without filters, use the `getAllHarvestRecords` tool directly. " +
-            "When a user requests harvest records with specific filters (e.g., field IDs, crop IDs, or dates), use the `getFiltered` tool directly. " +
-            "For actions like creating, updating, or deleting records, confirm with the user before proceeding. " +
-            "Be precise in your responses.";
+            "You are a farm management assistant. Today's date is {currentDate}.\n\n" +
+            "Rules:\n" +
+            "1. Never ask the user for IDs. Always resolve names (crops, fields, categories, measure units) to IDs yourself using the available list tools before acting.\n" +
+            "2. Before any write operation (create, update, delete), send ONE message that: (a) lists everything you will create or modify, including any side-effect entities (e.g. a new MeasureUnit or Category that does not yet exist), and (b) asks about any genuinely missing required fields. Execute immediately once the user responds — no second confirmation.\n" +
+            "3. Focus on farm management. Politely decline clearly unrelated requests; farming-adjacent questions (weather, pricing, agronomy) are welcome.";
 
     @Bean
     @Qualifier("chatClient")

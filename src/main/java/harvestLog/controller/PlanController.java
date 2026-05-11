@@ -85,7 +85,7 @@ public class PlanController {
         response.put("plan", effective.name());
         response.put("trialEndsAt", farmer.getTrialEndsAt() != null ? farmer.getTrialEndsAt().toString() : "");
         response.put("trialActive", effective == PlanType.FARM && farmer.getPlanType() == PlanType.FREE);
-        response.put("limits", Map.of(
+        response.put("limits", effective == PlanType.FARM ? null : Map.of(
                 "maxCrops", PlanLimits.FREE_MAX_CROPS,
                 "maxFields", PlanLimits.FREE_MAX_FIELDS,
                 "maxMeasureUnits", PlanLimits.FREE_MAX_MEASURE_UNITS

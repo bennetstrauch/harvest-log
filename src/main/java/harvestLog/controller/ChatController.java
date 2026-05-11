@@ -3,6 +3,8 @@
     import harvestLog.model.Farmer;
     import harvestLog.model.PlanType;
     import harvestLog.service.PlanService;
+    import harvestLog.service.RateLimitResult;
+    import harvestLog.service.RateLimitService;
     import harvestLog.service.ai.CategoryAiService;
     import harvestLog.service.ai.CategoryAiToolService;
     import harvestLog.service.ai.CropAiToolService;
@@ -14,6 +16,7 @@
     import org.springframework.ai.chat.model.ChatResponse;
     import org.springframework.beans.factory.annotation.Qualifier;
     import org.springframework.http.HttpStatus;
+    import org.springframework.http.MediaType;
     import org.springframework.http.ResponseEntity;
     import org.springframework.web.bind.annotation.GetMapping;
     import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,12 +42,14 @@
         private final MeasureUnitAiToolService measureUnitAiToolService;
         private final FarmerService farmerService;
         private final PlanService planService;
+        private final RateLimitService rateLimitService;
 
         public ChatController(@Qualifier("chatClient") ChatClient chatClient, CategoryAiService categoryAiService,
                               HarvestRecordAiToolService harvestRecordAiToolService, CropAiToolService cropAiToolService,
                               FieldAiToolService fieldAiToolService, CategoryAiToolService categoryAiToolService,
                               MeasureUnitAiToolService measureUnitAiToolService,
-                              FarmerService farmerService, PlanService planService) {
+                              FarmerService farmerService, PlanService planService,
+                              RateLimitService rateLimitService) {
             this.chatClient = chatClient;
             this.categoryAiService = categoryAiService;
             this.harvestRecordAiToolService = harvestRecordAiToolService;
@@ -54,6 +59,7 @@
             this.measureUnitAiToolService = measureUnitAiToolService;
             this.farmerService = farmerService;
             this.planService = planService;
+            this.rateLimitService = rateLimitService;
         }
 
         @GetMapping("/test-category-ai")
@@ -65,10 +71,21 @@
 
         @GetMapping
         public ResponseEntity<String> getResponse(@RequestParam String prompt, @RequestParam String chatId) {
-            Farmer farmer = farmerService.findById(getAuthenticatedFarmerId());
+            Long farmerId = getAuthenticatedFarmerId();
+            Farmer farmer = farmerService.findById(farmerId);
             if (planService.getEffectivePlan(farmer) == PlanType.FREE) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("{\"code\":\"PREMIUM_REQUIRED\",\"message\":\"The AI Assistant is a FARM plan feature.\"}");
+            }
+
+            RateLimitResult rateLimit = rateLimitService.check(farmerId);
+            if (!rateLimit.allowed()) {
+                String body = String.format(
+                        "{\"code\":\"RATE_LIMITED\",\"reason\":\"%s\",\"resetAt\":\"%s\"}",
+                        rateLimit.reason(), rateLimit.resetAt());
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body);
             }
 
             ChatResponse response = chatClient

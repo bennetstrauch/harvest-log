@@ -4,6 +4,8 @@ import harvestLog.dto.*;
 import harvestLog.model.Farmer;
 import harvestLog.repository.FarmerRepository;
 import harvestLog.security.JwtUtilityService;
+import harvestLog.service.EmailCooldownResult;
+import harvestLog.service.EmailCooldownService;
 import harvestLog.service.EmailService;
 import harvestLog.service.impl.FarmerService;
 import jakarta.validation.Valid;
@@ -34,6 +36,8 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private EmailCooldownService emailCooldownService;
 
     @PostMapping("/register")
     public ResponseEntity<FarmerBasicResponse> registerFarmer(
@@ -80,17 +84,24 @@ public class AuthController {
 
         farmer.setEmailVerified(true);
         farmerRepository.save(farmer);
+        emailCooldownService.clear(farmer.getEmail());
 
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/resend-verification")
-    public ResponseEntity<Void> resendVerification(@RequestBody ResendVerificationRequest request) {
+    public ResponseEntity<?> resendVerification(@RequestBody ResendVerificationRequest request) {
         Farmer farmer = farmerRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No account found with that email"));
 
         if (farmer.isEmailVerified()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is already verified");
+        }
+
+        EmailCooldownResult cooldown = emailCooldownService.check(farmer.getEmail(), "resend");
+        if (!cooldown.allowed()) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(java.util.Map.of("code", "EMAIL_COOLDOWN", "retryAfter", cooldown.retryAfter().toString()));
         }
 
         String token = UUID.randomUUID().toString();
@@ -108,18 +119,26 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-        farmerRepository.findByEmail(request.email()).ifPresent(farmer -> {
-            String token = UUID.randomUUID().toString();
-            farmer.setVerificationToken(token);
-            farmer.setVerificationTokenExpiry(LocalDateTime.now().plusHours(1));
-            farmerRepository.save(farmer);
-            try {
-                emailService.sendPasswordResetEmail(farmer.getEmail(), token);
-            } catch (Exception e) {
-                log.warn("Failed to send password reset email to {}: {}", farmer.getEmail(), e.getMessage());
-            }
-        });
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        var found = farmerRepository.findByEmail(request.email());
+        if (found.isEmpty()) return ResponseEntity.ok().build();
+
+        Farmer farmer = found.get();
+        EmailCooldownResult cooldown = emailCooldownService.check(farmer.getEmail(), "forgot");
+        if (!cooldown.allowed()) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(java.util.Map.of("code", "EMAIL_COOLDOWN", "retryAfter", cooldown.retryAfter().toString()));
+        }
+
+        String token = UUID.randomUUID().toString();
+        farmer.setVerificationToken(token);
+        farmer.setVerificationTokenExpiry(LocalDateTime.now().plusHours(1));
+        farmerRepository.save(farmer);
+        try {
+            emailService.sendPasswordResetEmail(farmer.getEmail(), token);
+        } catch (Exception e) {
+            log.warn("Failed to send password reset email to {}: {}", farmer.getEmail(), e.getMessage());
+        }
         return ResponseEntity.ok().build();
     }
 

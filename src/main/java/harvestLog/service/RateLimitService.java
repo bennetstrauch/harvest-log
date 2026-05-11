@@ -1,5 +1,6 @@
 package harvestLog.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class RateLimitService {
     private final ConcurrentHashMap<Long, Deque<Instant>> minuteWindows = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, AtomicInteger> dailyCounters = new ConcurrentHashMap<>();
 
+    @Autowired
     public RateLimitService(
             @Value("${app.rate-limit.per-minute:10}") int perMinuteLimit,
             @Value("${app.rate-limit.per-day:100}") int perDayLimit) {
